@@ -1,0 +1,8 @@
+{
+    "templates": [
+        {
+            "structure": "?x1 ?H1 ?x2 = ?x2 ?H1 ?x1",
+            "verified_lemma": "Commutative_Property"
+        }
+    ]
+}
