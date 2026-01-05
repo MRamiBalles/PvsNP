@@ -6,7 +6,7 @@ theorem sat_nontrivial_homology :
   rank (H1 (computationComplex SAT_AUDIT)) = 1 := by
   native_decide
 
-theorem kronecker_anomaly_7234 :
+theorem kronecker_anomaly_1602 :
   kroneckerCoeff (staircase 5) = 260 ∧ 
   260 - 231 = 29 := by
   native_decide
@@ -16,4 +16,4 @@ theorem P_ne_NP :
   apply classify_strong_obstruction
   constructor
   · exact sat_nontrivial_homology
-  · exact kronecker_anomaly_7234
+  · exact kronecker_anomaly_1602
