@@ -20,9 +20,10 @@ class IntervalSummary:
     h_in: int           # Initial head position
     h_out: int          # Final head position
     W_interface: bytes  # Interface window content (O(b) bytes)
+    regime: str = "VOID" # "VOID" (deterministic) or "VOLUME" (non-deterministic)
     
     def __repr__(self):
-        return f"Summary(q:{self.q_in}->{self.q_out}, h:{self.h_in}->{self.h_out})"
+        return f"Summary(q:{self.q_in}->{self.q_out}, h:{self.h_in}->{self.h_out}, regime:{self.regime})"
 
 
 class HolographicInterpreter:
@@ -53,6 +54,11 @@ class HolographicInterpreter:
             W_interface=right.W_interface
         )
         self.verified_count += 1
+        
+        # Risk A: If either side is VOLUME, the result is VOLUME (incompressibility propagates)
+        if left.regime == "VOLUME" or right.regime == "VOLUME":
+            merged.regime = "VOLUME"
+            
         return merged
     
     def build_causal_tree(self, summaries: List[IntervalSummary]) -> Optional[IntervalSummary]:
@@ -62,9 +68,17 @@ class HolographicInterpreter:
         if len(summaries) == 1:
             return summaries[0]
         
-        # Track memory usage: Active Surface Φ(τ) scales as O(log T) in a tree.
-        # This is strictly within the O(sqrt(T)) bound for holographic simulation.
-        active_surface_size = int(math.log2(len(summaries))) + 1
+        # Risk A: Volume vs Void Regime Check
+        # If in VOLUME regime, the active surface scales linearly (O(T)) instead of O(log T)
+        current_regime = summaries[0].regime
+        if current_regime == "VOLUME":
+            # Incompressible boundary: memory usage spikes to volume size
+            active_surface_size = len(summaries)
+            print(f"[WARNING] Regime: VOLUME. Boundary is algoritmically incompressible. Space: O({active_surface_size})")
+        else:
+            # Standard Void regime (deterministic path)
+            active_surface_size = int(math.log2(len(summaries))) + 1
+        
         self.memory_snapshots.append(active_surface_size)
         
         next_level = []
