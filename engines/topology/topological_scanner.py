@@ -304,11 +304,12 @@ class TopologicalScanner:
         if h_L == 0:
             msg = "h(L)=0: Trivial topology. Solvable by 1D systems (P)."
         elif h_L == 1:
-            msg = "h(L)=1: H₁ obstructions. Requires 2D systems. NP-hard candidate."
+            msg = "h(L)=1: H_1 obstructions. Requires 2D systems. NP-hard candidate."
         elif h_L == 2:
-            msg = "h(L)=2: H₂ cavities. Requires 3D systems. BQP boundary."
+            msg = "h(L)=2: H_2 cavities. Requires 3D systems. BQP boundary."
         else:
-            msg = "h(L)≥3: H₃ detected! BEYOND BQP. Requires higher-dimensional physics."
+            msg = "h(L)>=3: H_3 detected! BEYOND BQP. Requires higher-dimensional physics."
+
         
         return HigherBettiResult(
             beta_0=beta_0,
