@@ -11,10 +11,10 @@ class EpistemicLedger:
         self.ledger_path = ledger_path
         self.pillars = {
             "Topological_Homology": {
-                "status": "STRONG_CONJECTURE",
-                "confidence": 0.85,
+                "status": "STRONG_CONJECTURE (MODEL_DEPENDENT)",
+                "confidence": 0.70,
                 "source": "Tang (2025)",
-                "note": "H1 != 0 is a signature of hard instances."
+                "note": "H1 != 0 depends on the definition of 'computation path' complexes."
             },
             "Algebraic_Deviance": {
                 "status": "HEURISTIC_SIGNATURE",
