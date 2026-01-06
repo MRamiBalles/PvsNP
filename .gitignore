@@ -1,0 +1,25 @@
+# Lean artifacts
+.lake/
+lake-packages/
+lean_packages/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# LaTeX artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# OS artifacts
+.DS_Store
+Thumbs.db
