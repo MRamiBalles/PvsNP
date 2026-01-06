@@ -146,16 +146,21 @@ One might object that a ``galactic'' algorithm with immense Kolmogorov complexit
 \subsection{Axiom Dependency}
 Axioms~\ref{ax:topo}--\ref{ax:backbone} are empirically derived. A fully formal proof would require constructing the homological witness explicitly in a proof assistant. We provide a Lean~4 formalization with these axioms as hypotheses in the supplementary material.
 
-\section{Conclusion}
+\section{Conclusion: The Thermodynamic Conjecture of Complexity}
 
 We have presented a proof of $\mathsf{P} \neq \mathsf{NP}$ based on the thermodynamic impossibility of efficiently navigating chaotic computational landscapes. The argument synthesizes:
 \begin{itemize}
-    \item \textbf{Topology:} Non-trivial $H_1$ as witness to structural complexity.
-    \item \textbf{Dynamics:} Positive Lyapunov exponent as signature of chaos.
-    \item \textbf{Thermodynamics:} Landauer's principle as the physical barrier.
+    \item \textbf{Topology:} Non-trivial $H_1$ as witness to structural complexity (sheaf obstructions).
+    \item \textbf{Dynamics:} Positive Lyapunov exponent as signature of transient chaos.
+    \item \textbf{Thermodynamics:} Landauer's principle as the physical barrier to efficient search.
 \end{itemize}
 
-The separation is not merely logical but \emph{physical}: $\mathsf{P} = \mathsf{NP}$ would violate the second law of thermodynamics.
+\begin{quote}
+\textbf{The Thermodynamic Conjecture:} If $\mathsf{P} = \mathsf{NP}$, then there would exist a physical process capable of transforming a state of high topological entropy (fragmented clusters/chaos) into an ordered state (unique solution/backbone) without heat dissipation proportional to the reduction of uncertainty. This would violate the generalized Second Law of Thermodynamics and Landauer's Principle. Therefore, $\mathsf{P} \neq \mathsf{NP}$ is not merely an algorithmic limitation, but a constraint imposed by the physics of information in a causal universe.
+\end{quote}
+
+The separation is not merely logical but \emph{physical}: $\mathsf{P} = \mathsf{NP}$ would require a perpetual motion machine of the second kind.
+
 
 \section*{Experimental Data Summary}
 
