@@ -37,6 +37,15 @@ class AlgebraicReplayEngine:
         self.max_overhead = 0
         self.telemetry_callback = telemetry_callback
 
+    def get_telemetry(self) -> Dict:
+        """Return current telemetry for external analysis."""
+        return {
+            "peak_payload": self.max_payload,
+            "peak_overhead": self.max_overhead,
+            "total_peak": self.max_payload + self.max_overhead,
+            "boundary_count": len(self.boundary_store)
+        }
+
     def recursive_eval(self, start: int, end: int, depth: int) -> dict:
         """
         Ejecuta la recursión de punto medio (Midpoint Recursion).
