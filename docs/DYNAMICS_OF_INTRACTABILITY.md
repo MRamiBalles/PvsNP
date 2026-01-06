@@ -49,3 +49,19 @@ This document details four advanced theoretical sectors that unify the physical,
 2. **Topos**: Add `engines/topology/sheaf_analyzer.py` to detect local-global inconsistencies.
 3. **Chaos**: Add `experiments/transient_chaos.py` using `scipy.integrate` for Ising ODEs.
 4. **MDL**: Enhance `experiments/crypto_hardness.py` with stronger compression metrics (ZPAQ, PAQ8).
+
+---
+## Experimental Results (Jan 2026)
+
+### Transient Chaos (Ising ODE)
+- **Status**: Numerical instabilities (`ODEintWarning`) prevented stable Lyapunov estimation.
+- **Observation**: The ODE solver struggles with the highly nonlinear SAT energy landscape.
+- **Verdict**: Requires more robust integrators (Runge-Kutta 45, adaptive stepsize) or stochastic methods.
+
+### MDL Compression (Kolmogorov Approximation)
+- **Finding**: ALL traces were highly compressible (ZLIB ratio 0.02 - 0.22).
+- **Interpretation**: This **challenges the hypothesis** that hard traces are incompressible.
+    - Possible explanation: The *solution* is structured (the path to it is compressible), but the *search space* is not.
+    - Alternative: We are compressing the "algorithm's log" (which has structure from the algorithm itself), not the "raw problem".
+- **Next Steps**: Compress the *energy landscape description*, not the solver trace.
+
