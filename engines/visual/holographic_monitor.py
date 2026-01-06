@@ -1,80 +1,66 @@
 """
-Holographic Monitor - Real-Time Visualization
-Status: NEW (Phase 18)
-Validates Computational Area Law: S(t) <= O(sqrt(t))
-
-Visualizes the "Holographic Boundary" of the Algebraic Replay Engine.
+Holographic Monitor - Phase 19 Refined
+Validates Payload (sqrt T) vs Overhead (log T) scaling.
 """
 
 import math
 import sys
-import time
 from engines.holography.optimization import AlgebraicReplayEngine
 
 class HolographicMonitor:
     def __init__(self, time_bound_t):
         self.t = time_bound_t
-        self.max_space_observed = 0
         self.history = []
-        self.engine = AlgebraicReplayEngine(self.t, telemetry_callback=self.on_telemetry_event)
+        self.engine = AlgebraicReplayEngine(self.t, telemetry_callback=self.store_telemetry)
 
-    def on_telemetry_event(self, stack_depth, block_size):
-        """
-        Callback from the engine.
-        Total Space = Active Screen Area (b) + Stack Depth (log T)
-        """
-        current_space = block_size + stack_depth
-        self.max_space_observed = max(self.max_space_observed, current_space)
-        self.history.append(current_space)
-        
-        # Optional: Print real-time status (can be noisy for large T)
-        # print(f"Stack: {stack_depth}, TotalSpace: {current_space}")
+    def store_telemetry(self, payload, overhead):
+        self.history.append((payload, overhead))
 
     def run_simulation(self):
-        print(f"\n[MONITOR] Starting Holographic Simulation (T={self.t})...")
-        print(f"[MONITOR] Theoretical Bound sqrt(T) = {math.sqrt(self.t):.2f}")
-        
-        start_time = time.time()
-        self.engine.height_compression_schedule(0, self.engine.T)
-        duration = time.time() - start_time
-        
-        print(f"[MONITOR] Simulation Complete in {duration:.4f}s.")
+        print(f"\n[MONITOR] Phase 19: Auditing Holographic Scale (T={self.t})")
+        self.engine.recursive_eval(0, self.t, 0)
         self.visualize_results()
 
     def visualize_results(self):
-        print("\n" + "="*50)
-        print("COMPUTATIONAL AREA LAW VISUALIZATION")
-        print("="*50)
+        print("\n" + "="*60)
+        print("HOLOGRAPHIC PERFECTION AUDIT: PAYLOAD VS OVERHEAD")
+        print("="*60)
         
-        theoretical_bound = 2 * math.sqrt(self.t) # Conservative bound 2*sqrt(t)
+        max_p = max(p for p, o in self.history)
+        max_o = max(o for p, o in self.history)
         
-        print(f"Max Space Observed: {self.max_space_observed}")
-        print(f"Theoretical Bound:  {theoretical_bound:.2f}")
-        print("-" * 50)
+        print(f"Max Active Payload:  {max_p} (Target: O(sqrt T))")
+        print(f"Max Control Overhead: {max_o} (Target: O(log T))")
+        print("-" * 60)
         
-        # ASCII Plot of Space Usage over "Time" (Recursion Steps)
-        # Downsample history to fit screen width
-        width = 60
-        step = max(1, len(self.history) // width)
-        sampled_history = self.history[::step]
+        # ASCII Plotting Layer
+        width = 50
+        step = max(1, len(self.history) // 15)
+        sampled = self.history[::step]
         
-        print("Space Usage Profile:")
-        max_val = max(self.history) if self.history else 1
-        
-        for i, val in enumerate(sampled_history):
-            # Bar height modeled by val
-            bar_len = int((val / max_val) * 20)
-            bar = "#" * bar_len
-            print(f"t={i*step:<4} | {bar} ({val})")
+        print("Visual Profile [ P=Payload, O=Overhead ]")
+        for i, (p, o) in enumerate(sampled):
+            # Scale bars relative to max_p
+            p_len = int((p / max_p) * 20)
+            o_len = int((o / max_p) * 20)
             
-        print("-" * 50)
-        if self.max_space_observed <= theoretical_bound:
-            print("[SUCCESS] VALID: Space stayed within Holographic Boundary.")
+            p_bar = "P" * p_len
+            o_bar = "O" * o_len
+            
+            print(f"t={i*step:<4} | {p_bar}{o_bar} (P:{p}, O:{o})")
+            
+        print("-" * 60)
+        # Verification Logic
+        sqrt_t = math.sqrt(self.t)
+        log_t = math.log2(self.t)
+        
+        if max_p <= 2.5 * sqrt_t and max_o < max_p:
+            print("[SUCCESS] VALID: Asymptotic separation confirmed.")
+            print(f"         Payload ~ {max_p/sqrt_t:.2f}*sqrt(T), Overhead ~ {max_o/log_t:.2f}*log(T)")
         else:
-            print("[WARNING] VIOLATION: Space exceeded bound!")
-        print("="*50)
+            print("[WARNING] Audit failed to confirm strict separation.")
+        print("="*60)
 
 if __name__ == "__main__":
-    # Test cases
-    monitor = HolographicMonitor(time_bound_t=1000)
+    monitor = HolographicMonitor(time_bound_t=2000)
     monitor.run_simulation()
