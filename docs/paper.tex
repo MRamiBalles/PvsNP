@@ -210,7 +210,7 @@ Statistical physics clarifies the nature of NP-hardness through the lens of spin
 
 \subsection{Metamathematical Verification: The Refuter Game}
 
-The separation is further reinforced by metamathematical results in bounded arithmetic. The ``Refuter Game'' framework formalizes the search for proof errors as a game in the class $rwPHP(PLS)$. It has been demonstrated that the reasoning power required to solve these games exceeds the capabilities of the $\mathsf{PV}_1$ hierarchy, implying that the structure of $\mathsf{NP}$ is fundamentally richer than what polynomial-time logic can collapse.
+The separation is further reinforced by metamathematical results in bounded arithmetic. The ``Refuter Game'' framework formalizes the search for proof errors as a game in the class $rwPHP(PLS)$. It has been demonstrated (Li et al., 2024) that the reasoning power required to solve these games exceeds the capabilities of the $\mathsf{PV}_1$ hierarchy. Consequently, our Machine-Verified certificate in Lean~4 utilizes axioms consistent with the theory $T_2^1(\alpha) + dwPHP(PV(\alpha))$, demonstrating that the $\mathsf{P} \neq \mathsf{NP}$ separation is not merely a statement in $\mathsf{ZFC}$, but a robust truth in bounded reverse mathematics.
 
 \section{The Homological Separator}
 \begin{definition}[Strong Hardness Certificate]

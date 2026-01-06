@@ -37,10 +37,10 @@ class HolographicInterpreter:
         self.verified_count = 0
         self.memory_snapshots = [] # To track memory usage (O(sqrt(T)))
         
-    def create_summary(self, q_in, q_out, h_in, h_out, window_data=None):
+    def create_summary(self, q_in, q_out, h_in, h_out, window_data=None, regime="VOID"):
         if window_data is None:
             window_data = bytes(self.block_size)
-        return IntervalSummary(q_in, q_out, h_in, h_out, window_data)
+        return IntervalSummary(q_in, q_out, h_in, h_out, window_data, regime)
     
     def merge(self, left: IntervalSummary, right: IntervalSummary) -> Optional[IntervalSummary]:
         if left.q_out != right.q_in:
