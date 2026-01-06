@@ -93,25 +93,47 @@ class TopologicalScanner:
         triangles = set()
         tetrahedra = set()
         
-        # Vertices: each unique configuration hash
+    def _make_hashable(self, obj):
+        """Recursively convert unhashable types (dict, list) to hashable tuples."""
+        if isinstance(obj, dict):
+            return tuple(sorted((k, self._make_hashable(v)) for k, v in obj.items()))
+        elif isinstance(obj, list):
+            return tuple(self._make_hashable(x) for x in obj)
+        return obj
+
+    def trace_to_simplicial_complex(self, trace: List[dict]) -> SimplicialComplex:
+        """
+        Convert execution trace to simplicial complex.
+        """
+        vertices = set()
+        edges = set()
+        triangles = set()
+        tetrahedra = set()
+        
+        # 1. Pre-calculate IDs for all unique configurations
         config_to_id = {}
-        for i, config in enumerate(trace):
-            config_hash = hash(frozenset(config.items())) if isinstance(config, dict) else hash(config)
+        trace_ids = []
+        
+        for config in trace:
+            h_obj = self._make_hashable(config)
+            config_hash = hash(h_obj)
+            
             if config_hash not in config_to_id:
                 config_to_id[config_hash] = len(config_to_id)
-            vertices.add(config_to_id[config_hash])
-        
-        # Edges: sequential transitions
-        prev_id = None
-        for config in trace:
-            config_hash = hash(frozenset(config.items())) if isinstance(config, dict) else hash(config)
-            curr_id = config_to_id[config_hash]
             
-            if prev_id is not None and prev_id != curr_id:
+            node_id = config_to_id[config_hash]
+            trace_ids.append(node_id)
+            vertices.add(node_id)
+        
+        # 2. Edges: sequential transitions
+        for i in range(len(trace_ids) - 1):
+            prev_id = trace_ids[i]
+            curr_id = trace_ids[i+1]
+            
+            if prev_id != curr_id:
                 edge = (min(prev_id, curr_id), max(prev_id, curr_id))
                 edges.add(edge)
-            
-            prev_id = curr_id
+
         
         # Build adjacency for clique detection
         adj = {v: set() for v in vertices}

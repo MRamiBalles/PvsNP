@@ -47,6 +47,7 @@ class TraceEvent:
     variable: Optional[int]     # Variable involved
     assignment: Optional[bool]  # Value assigned
     state_hash: int             # Hash of current partial assignment
+    assignment_state: Dict[int, bool] = None # Full state (Phase 32)
 
 class InstrumentedSATSolver:
     """
@@ -77,9 +78,11 @@ class InstrumentedSATSolver:
             level=self.decision_level,
             variable=variable,
             assignment=assignment,
-            state_hash=self._state_hash()
+            state_hash=self._state_hash(),
+            assignment_state=self.assignment.copy()
         )
         self.trace.append(event)
+
     
     def solve_with_trace(self, instance: SATInstance) -> Tuple[bool, List[TraceEvent]]:
         """
@@ -220,9 +223,11 @@ class InstrumentedSATSolver:
             configs.append({
                 "type": event.event_type.value,
                 "level": event.level,
-                "hash": event.state_hash
+                "hash": event.state_hash,
+                "assignment": event.assignment_state
             })
         return configs
+
     
     def get_trace_statistics(self) -> Dict:
         """Get statistics about the solving trace."""
