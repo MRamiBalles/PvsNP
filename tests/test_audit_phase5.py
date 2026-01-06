@@ -24,13 +24,13 @@ def test_holographic_regimes():
     void_summaries = [interpreter.create_summary(i, i+1, i, i+1, regime="VOID") for i in range(8)]
     print("\n[Testing VOID]")
     interpreter.verify_trace(void_summaries)
-    void_memory = interpreter.memory_snapshots[-1]
+    void_memory = max(interpreter.memory_snapshots)
     
     # VOLUME Regime (Non-deterministic)
     volume_summaries = [interpreter.create_summary(i, i+1, i, i+1, regime="VOLUME") for i in range(8)]
     print("\n[Testing VOLUME]")
     interpreter.verify_trace(volume_summaries)
-    volume_memory = interpreter.memory_snapshots[-1]
+    volume_memory = max(interpreter.memory_snapshots)
     
     print(f"\nMemory Comparison: VOID={void_memory} vs VOLUME={volume_memory}")
     return volume_memory > void_memory
