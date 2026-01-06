@@ -22,6 +22,14 @@ class TopologyType(Enum):
     HIGHLY_CONNECTED = "highly_connected"  # beta_1 >> 0
 
 @dataclass
+class PersistenceInterval:
+    """Represents a topological feature's birth and death."""
+    dimension: int
+    birth: float
+    death: float
+    persistence: float
+
+@dataclass
 class BettiResult:
     """Result of Betti number computation."""
     beta_0: int  # Connected components
@@ -29,7 +37,8 @@ class BettiResult:
     beta_2: int  # 2-dimensional voids (optional)
     topology_type: TopologyType
     euler_characteristic: int
-    message: str
+    intervals: List[PersistenceInterval] = None
+    message: str = ""
 
 @dataclass
 class SimplicialComplex:
@@ -243,10 +252,129 @@ class TopologicalScanner:
         self.scan_history.append(result)
         return result
     
-    def scan_trace(self, trace: List[dict]) -> BettiResult:
-        """Full pipeline: trace -> simplicial complex -> Betti numbers."""
-        complex = self.trace_to_simplicial_complex(trace)
-        return self.compute_betti_numbers(complex)
+    def compute_persistence(self, trace: List[dict]) -> List[PersistenceInterval]:
+        """
+        Compute Persistent Homology using computation depth as filtration.
+        
+        Algorithm: Standard Persistent Homology over Z_2.
+        1. Build simplicial complex with filtration values (depth).
+        2. Sort simplices by filtration and dimension.
+        3. Perform column reduction on the boundary matrix.
+        """
+        # 1. Prepare simplices with filtration (depth)
+        # For simplicity, we use vertices and edges.
+        vertices_with_filt = []
+        edges_with_filt = []
+        
+        config_to_id = {}
+        prev_id = None
+        
+        for event in trace:
+            cfg = event.get("hash", hash(str(event)))
+            depth = event.get("level", 0.0)
+            
+            if cfg not in config_to_id:
+                config_to_id[cfg] = len(config_to_id)
+                vertices_with_filt.append((config_to_id[cfg], depth))
+            
+            curr_id = config_to_id[cfg]
+            if prev_id is not None and prev_id != curr_id:
+                edge = tuple(sorted([prev_id, curr_id]))
+                # Edge filtration is the max of its vertices' filtration (or event time)
+                edges_with_filt.append((edge, depth))
+            prev_id = curr_id
+
+        # 2. Combine and sort simplices
+        # Simplified: H_1 persistence (Edges and Vertices)
+        # A proper PH would sort all simplices [K0, K1, ...]
+        simplices = []
+        for v, f in vertices_with_filt: simplices.append({'dim': 0, 'nodes': (v,), 'f': f})
+        # Remove duplicates for edges
+        unique_edges = {}
+        for e, f in edges_with_filt:
+            if e not in unique_edges or f < unique_edges[e]:
+                unique_edges[e] = f
+        for e, f in unique_edges.items(): simplices.append({'dim': 1, 'nodes': e, 'f': f})
+
+        # Sort by filtration, then by dimension
+        simplices.sort(key=lambda s: (s['f'], s['dim']))
+        
+        # 3. Boundary Matrix Reduction
+        # We need a way to track which columns are reduced
+        pivot_to_col = {}
+        intervals = []
+        
+        # Boundary matrix as list of active indices (Z_2)
+        n = len(simplices)
+        boundary_cols = [[] for _ in range(n)]
+        
+        for i, s in enumerate(simplices):
+            if s['dim'] > 0:
+                # Boundary of edge (u, v) is {u, v}
+                # Find indices of vertices in the sorted list
+                b_indices = []
+                for node in s['nodes']:
+                    for j in range(i):
+                        if simplices[j]['dim'] == s['dim'] - 1 and simplices[j]['nodes'] == (node,):
+                            b_indices.append(j)
+                            break
+                boundary_cols[i] = sorted(b_indices)
+            
+            # Reduce column i
+            while boundary_cols[i]:
+                pivot = max(boundary_cols[i])
+                if pivot not in pivot_to_col:
+                    break
+                # XOR with the column that has this pivot
+                target_col = boundary_cols[pivot_to_col[pivot]]
+                # Z_2 addition (symmetric difference)
+                new_col = set(boundary_cols[i]) ^ set(target_col)
+                boundary_cols[i] = sorted(list(new_col))
+            
+            if not boundary_cols[i]:
+                # i is a "creator" (birth of a feature)
+                pass
+            else:
+                # i is a "destroyer" (death of feature at pivot)
+                pivot = max(boundary_cols[i])
+                birth_idx = pivot
+                death_idx = i
+                
+                birth_f = simplices[birth_idx]['f']
+                death_f = simplices[death_idx]['f']
+                
+                if death_f > birth_f:
+                    intervals.append(PersistenceInterval(
+                        dimension=simplices[birth_idx]['dim'],
+                        birth=birth_f,
+                        death=death_f,
+                        persistence=death_f - birth_f
+                    ))
+                pivot_to_col[pivot] = i
+        
+        # Infinite intervals (features that never die)
+        # These are the Betti numbers of the final complex
+        for i in range(n):
+            if i not in pivot_to_col and not boundary_cols[i]:
+                intervals.append(PersistenceInterval(
+                    dimension=simplices[i]['dim'],
+                    birth=simplices[i]['f'],
+                    death=float('inf'),
+                    persistence=float('inf')
+                ))
+
+        return intervals
+
+    def plot_barcodes(self, intervals: List[PersistenceInterval]):
+        """Textual representation of persistence barcodes."""
+        print("\n" + "-"*40)
+        print("PERSISTENCE BARCODE (H_1)")
+        print("-"*40)
+        for inter in sorted(intervals, key=lambda x: x.birth):
+            if inter.dimension == 1:
+                life = "----" if inter.death == float('inf') else f"-{inter.persistence:.1f}-"
+                print(f"[{inter.birth:4.1f}] {life}> Death: {inter.death}")
+        print("-"*40)
     
     def generate_test_traces(self, difficulty: str = "easy") -> List[dict]:
         """
