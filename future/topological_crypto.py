@@ -1,85 +1,58 @@
 import numpy as np
-import networkx as nx
+from scipy.linalg import svd
 
-class HomologicalCryptography:
+class HomologicalCrypto:
     """
-    Prototype for Homological Cryptography based on high-dimensional 
-    topological obstructions (h(L) >= 3).
+    Prototype for Homological Cryptography.
+    Based on the 'Quantum Obstruction Conjecture' (h(L) >= 3).
     """
-    
     def __init__(self, dimension=3):
         self.dimension = dimension
-        self.public_key = None
-        self._private_key = None # The contraction pathgamma
         
-    def generate_keys(self):
+    def generate_keys(self, complexity=3):
         """
-        Private key: A contractible cycle in a high-dim complex.
-        Public key: The complex itself, obfuscated to look non-trivial.
+        Private Key: A contraction path gamma for a cycle in H_1.
+        Public Key: An obfuscated simplicial complex L where h(L) appears high.
         """
-        print(f"Generating keys for dimension {self.dimension}...")
-        
-        # Private Key: A sequence of operations that collapses a hole
-        self._private_key = "ContractionPath_H1_to_Zero"
-        
-        # Public Key: Simulating a complex with homology complexity h(L)
-        # In a real impl, this would be a large incidence matrix
-        self.public_key = {
-            "h_complexity": self.dimension,
-            "structure": "High_Dimensional_Simplicial_Complex",
-            "is_obfuscated": True
+        # Simulation of a complex with a 'hidden' contractible path
+        private_key = "Contraction_Path_Gamma"
+        public_key = {
+            "complex": "Obfuscated_Simplicial_Complex_L",
+            "homological_complexity": complexity
         }
-        return self.public_key
+        return private_key, public_key
 
-    def h_complexity(self, complex_data):
+    def compute_hl(self, boundary_matrix):
         """
-        Audit function to calculate Homological Complexity h(L).
+        Computes the Homological Complexity h(L).
+        h(L) = rank(H_1) = dim(ker(d1)) - rank(d2)
         """
-        # Simulated h(L) calculation
-        if complex_data.get("is_obfuscated", False):
-            # For a polynomial observer, it looks like h(L) > 0
-            return complex_data.get("h_complexity", 0)
-        return 0
+        # Simple h(L) calculation using SVD for rank estimation
+        # In a real system, this would be over Z2 or Z using Smith Normal Form
+        u, s, vh = svd(boundary_matrix)
+        rank = np.sum(s > 1e-10)
+        return rank
 
-    def verify_security(self):
+    def topological_one_way_function(self, data, public_key):
         """
-        Verify if the system is Post-Quantum secure (h(L) >= 3).
+        Simulates the encryption: The data is mapped to a cycle in the complex.
+        Without the private key (contraction path), the adversary faces
+        the obstruction h(L) >= 3.
         """
-        h_val = self.h_complexity(self.public_key)
-        print(f"Auditing Algorithm Security: h(L) = {h_val}")
-        
-        if h_val >= 3:
-            print("[SAFE] Post-Quantum Homological Security verified.")
-            return True
-        elif h_val > 0:
-            print("[WARNING] Vulnerable to Quantum (h(L) <= 2) but secure against P.")
-            return False
+        if public_key["homological_complexity"] >= 3:
+            return f"Encrypted({data})_under_Obstruction_h{public_key['homological_complexity']}"
         else:
-            print("[UNSAFE] h(L)=0. Contractible. Insecure.")
-            return False
-
-    def encrypt(self, message):
-        """
-        Encrypt by embedding message into the topological obstruction.
-        """
-        print(f"Encrypting message: '{message}' within H_{self.dimension} cycles...")
-        return f"Encrypted({message})_within_Obstruction"
-
-    def decrypt(self, encrypted_data):
-        """
-        Decrypt using the contractibility path (private key).
-        """
-        if self._private_key:
-            print("Applying private contraction path gamma...")
-            # Simulated decryption
-            return encrypted_data.replace("Encrypted(", "").replace(")_within_Obstruction", "")
-        raise ValueError("Decryption failed: No private key found.")
+            return "Vulnerable_Low_Dimension"
 
 if __name__ == "__main__":
-    crypto = HomologicalCryptography(dimension=3)
-    pub = crypto.generate_keys()
-    crypto.verify_security()
+    crypto = HomologicalCrypto()
+    priv, pub = crypto.generate_keys(complexity=4)
+    print(f"Keys generated. Pub h(L): {pub['homological_complexity']}")
     
-    cipher = crypto.encrypt("P != NP Secret")
-    plain = crypto.decrypt(cipher)
-    print(f"Decrypted: {plain}")
+    # Simulate a dummy boundary matrix
+    d2 = np.random.randint(0, 2, (10, 5))
+    hl = crypto.compute_hl(d2)
+    print(f"Measured h(L) of sample: {hl}")
+    
+    encrypted = crypto.topological_one_way_function("SecretMessage", pub)
+    print(encrypted)

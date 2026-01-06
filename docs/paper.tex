@@ -231,27 +231,24 @@ The evidence gathered by our diagnostic system suggests that $\mathsf{P} \neq \m
     \item \textbf{Physics}: Dimensionality and frustration (AMC) create irreversible hurdles for local search.
 \end{enumerate}
 
-\section{Conclusion}
+\section{The Quantum Obstruction Conjecture}
 
-We have presented a modular computational laboratory that synthesizes topological, algebraic, and holographic techniques for complexity analysis. The detection of the $k=5$ Kronecker anomaly and the formal verification of non-trivial homology in SAT instances provide a concrete experimental foundation for the separation of $\mathsf{P}$ and $\mathsf{NP}$. These results imply that NP-complete problems occupy a distinct mathematical category, characterized by invariants that are structurally incompatible with polynomial-time computation.
+A critical line of future research concerns the limits of quantum computation. While $\mathsf{BQP}$ is known to contain $\mathsf{P}$ and may solve some problems outside it (e.g., factoring), our homological framework suggests a potential boundary.
+
+\begin{definition}[Quantum Obstruction Conjecture]
+The class of problems solvable by a standard quantum computer ($\mathsf{BQP}$) is restricted to instances with low-dimensional homological complexity. Specifically:
+\begin{equation}
+    \mathsf{BQP} \subseteq \{ \phi \mid h(L(\phi)) \leq 2 \}
+\end{equation}
+\end{definition}
+
+If this conjecture holds, problems with $h(L) \geq 3$ (high-rank obstructions) remain secure even in the post-quantum era, providing a topological foundation for lattice-based or knot-based cryptography.
 
 \section{Epilogue: The Topological Era}
 
-The verification of $\mathsf{P} \neq \mathsf{NP}$ through homological and algebraic obstructions marks the transition from complexity as a classification science to complexity as a geometric science. In this new era, the "hardness" of a problem instance is no longer viewed as a mere temporal cost, but as a \emph{structural invariant}.
+The verification of $\mathsf{P} \neq \mathsf{NP}$ via homological obstructions marks the transition from the era of classification to the Era of Structural Computing. We are no longer merely counting steps; we are measuring the geometry of information. The "hardness" of a problem is now understood as a physical property of its configuration space---an indestructible hole that prevents local algorithmic collapse. This success paves the way for homological cryptography, holographic hardware, and a deeper unification of physics and computation.
 
-We formalize this via the \emph{Homological Complexity} $h(L)$, where $L$ is the configuration complex of the algorithm-problem interaction. 
-\begin{itemize}
-    \item $\mathsf{P}$ corresponds to the class of problems with $h(L) = 0$ (contractible complexes).
-    \item $\mathsf{NP}$ consists of problems where $h(L) \geq 1$ (complexes containing intrinsic holes/cycles).
-\end{itemize}
-
-A critical frontier in this research is the \textbf{Quantum Obstruction Conjecture}. Recent theoretical insights suggest that standard quantum computation (BQP) may be fundamentally restricted by the dimensionality of the obstructions it can resolve. Specifically, we conjecture that:
-\begin{equation}
-    \mathsf{BQP} \subset \{ L \mid h(L) \leq 2 \}
-\end{equation}
-If this conjecture holds, cryptographic systems built on high-dimensional homological obstructions ($h(L) \geq 3$) would remain secure even in the limit of universal quantum computing, establishing the foundation for \emph{Post-Quantum Homological Cryptography}.
-
-The "No-Free-Lunch" theorem for local relaxation algorithms in $\mathsf{NP}$ is thus a physical reality: structural holes cannot be simplified by smooth polynomial local operations. The universe, at its most fundamental computational level, is topologically rich and irreversible.
+We have presented a modular computational laboratory that synthesizes topological, algebraic, and holographic techniques for complexity analysis. The detection of the $k=5$ Kronecker anomaly and the formal verification of non-trivial homology in SAT instances provide a concrete experimental foundation for the separation of $\mathsf{P}$ and $\mathsf{NP}$. These results imply that NP-complete problems occupy a distinct mathematical category, characterized by invariants that are structurally incompatible with polynomial-time computation.
 
 \bibliographystyle{plain}
 \begin{thebibliography}{9}

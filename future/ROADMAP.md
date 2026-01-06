@@ -1,3 +1,4 @@
+
 # Roadmap: The Era of Structural Computing
 
 Following the successful verification of $P \neq NP$ via homological obstructions, we enter a new paradigm where the structure of information dictates the limits of computation. This roadmap outlines the next frontiers.
