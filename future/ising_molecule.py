@@ -37,15 +37,18 @@ class IsingMolecule:
             for y in range(self.size[1] - 1):
                 # Nodes of the square plaquette
                 p = [(x, y, 0), (x+1, y, 0), (x+1, y+1, 0), (x, y+1, 0)]
-                # Product of interaction signs
-                product = (self.graph[p[0]][p[1]]['J'] * 
-                           self.graph[p[1]][p[2]]['J'] * 
-                           self.graph[p[2]][p[3]]['J'] * 
-                           self.graph[p[3]][p[0]]['J'])
-                
-                total_plaquettes += 1
-                if product < 0:
-                    frustrated_count += 1
+                # Product of interaction signs (safe access)
+                try:
+                    product = (self.graph.edges[p[0], p[1]]['J'] * 
+                               self.graph.edges[p[1], p[2]]['J'] * 
+                               self.graph.edges[p[2], p[3]]['J'] * 
+                               self.graph.edges[p[3], p[0]]['J'])
+                    
+                    total_plaquettes += 1
+                    if product < 0:
+                        frustrated_count += 1
+                except KeyError:
+                    continue
         
         frustration_index = frustrated_count / total_plaquettes
         print(f"Frustration Detection: {frustrated_count}/{total_plaquettes} plaquettes frustrated.")
