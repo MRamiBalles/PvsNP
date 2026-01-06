@@ -1,71 +1,54 @@
-# SCO Critical Evaluation & Future Directions
-## Status: v4.0 Complete | v5.0 Planning
+# SCO v5.0: CRITICAL EVALUATION (Post-Audit)
+# Status: FRAMEWORK COMPLETE | PEER REVIEW PENDING
+
+## ⚠️ Epistemic Status
+This document acknowledges the **limitations and open questions** of the SCO framework. The project has achieved internal consistency but has NOT been peer-reviewed or accepted by the complexity theory community.
+
+## 🚨 Critical Gaps Identified
+
+### 1. The Tautological Trap (Tang Definition Risk)
+- **Issue**: The definition of `computationChainComplex` may implicitly encode "non-determinism = non-trivial homology."
+- **Risk**: If the complex is constructed assuming only exhaustive search is possible, we are assuming what we try to prove.
+- **Mitigation Needed**: Independent verification that $C_\bullet(L)$ is defined purely from the problem structure, not from assumed algorithmic behavior.
+
+### 2. Axiom Dependency (External Oracle)
+- **Issue**: `SCO_Experimental_Evidence` (H₁ ≠ 0) is injected as an axiom based on Python calculations.
+- **Risk**: Any implicit assumptions in the Python model propagate into the "formal" Lean proof.
+- **Mitigation Needed**: Construct the H₁ cycle explicitly in Lean (bit-level representation) to eliminate external dependency.
+
+### 3. Barrier Evasion (Incomplete)
+- **Algebrization (Phase 32)**: We showed cycles "fill" in GF(q), but did not prove this survives all low-degree extensions.
+- **Natural Proofs (Phase 34)**: The MCSP-OWF link is heuristic. If our technique distinguishes easy/hard functions efficiently, it may break PRGs, contradicting our cryptographic claims.
+
+### 4. Physical Heuristics
+- **Issue**: The Spin-Glass backbone (Phase 28) provides physical intuition, not mathematical proof.
+- **Risk**: Exotic algorithms ("galactic") might solve SAT without hitting the backbone barrier.
+
+## 📊 Project Status Matrix
+
+| Component | Status | Confidence |
+|:---|:---|:---|
+| Topological Scanner | ✅ Implemented | High (code works) |
+| Algebrization Test | ⚠️ Experimental | Medium (heuristic) |
+| BQP Threshold | ✅ Verified (h(L) ≤ 2) | Medium-High |
+| MCSP-OWF Link | ⚠️ Correlational | Medium |
+| Lean 4 Proof | ⚠️ Axiom-dependent | Low (not self-contained) |
+| **Overall** | **FRAMEWORK COMPLETE** | **PEER REVIEW REQUIRED** |
+
+## ✅ What We Have Achieved
+1. A unified experimental framework linking physics, topology, and meta-complexity.
+2. Reproducible experiments showing phase transitions in homological complexity.
+3. A structural argument that is internally consistent with Tang (2025) and Lee (2025).
+
+## ❌ What We Have NOT Achieved
+1. A self-contained, axiom-free formal proof in Lean 4.
+2. Community peer review and acceptance.
+3. Proven immunity to all known barriers (only heuristic evidence).
+
+## 🎯 Recommended Next Steps
+1. **Publish as "Framework Paper"**: Submit as "A Unified Topological Framework for Computational Complexity" without claiming the Millennium Prize.
+2. **Adversarial AI Audit**: Run the Lean code through independent verification tools (e.g., Mathlib maintainers).
+3. **Explicit Cycle Construction**: Hardcode the H₁ witness in Lean to eliminate external axioms.
 
 ---
-
-## 1. State of the Art: What SCO Has Achieved
-
-| Version | Pillar | Finding | Theoretical Alignment |
-| :--- | :--- | :--- | :--- |
-| v2.0 | Algebraic | Kronecker collapse at $k=5$ | Lee (2025) |
-| v3.0 | Topological | $H_1 \neq 0$ in critical instances | Tang (2025) |
-| v3.0 | Physical | $\alpha \approx 4.26$ phase transition | Zhang (2025) |
-| v4.0 | Physical | 43% backbone via Survey Propagation | Mézard, Zecchina |
-| v4.0 | Topological | 12 persistent $H_1$ cycles | Edelsbrunner |
-| v4.0 | Metamath | rwPHP(PLS)-complete classification | Li, Li, Ren (2024) |
-
----
-
-## 2. Known Gaps & Barriers
-
-### A. Algebrization Barrier (Aaronson-Wigderson)
-**Status**: NOT ADDRESSED
-The SCO uses algebraic techniques (Kronecker coefficients) but has not explicitly demonstrated immunity to the Algebrization barrier. Future work must show that the topological obstructions detected are *not* relativizing.
-
-### B. Galactic Algorithms
-**Status**: THEORETICAL RISK
-SCO has shown that *known* algorithms fail at the critical threshold. However, it has not ruled out the existence of a polynomial algorithm with astronomically large constants (a "galactic" algorithm). This is an inherent limitation of empirical approaches.
-
-### C. Formal Verification
-**Status**: CRITICAL GAP
-All findings are based on executed Python code. To be mathematically rigorous, the core lemmas (e.g., "H_1 > 0 implies non-polynomial solvability") must be formalized in a proof assistant like Lean 4.
-
----
-
-## 3. P vs NP Verdict (Experimental)
-
-Based on the multimodal convergence of obstructions:
-
-> **Experimental Evidence Points to P ≠ NP**
-
-However, this is NOT a mathematical proof. It is a structured body of empirical evidence consistent with the hypothesis.
-
----
-
-## 4. SCO v5.0 Roadmap: "The Certification Phase"
-
-### Phase 31: Lean 4 Formalization
-- Translate the "Holographic Barrier" lemmas into Lean 4.
-- Prove that the ARE's $O(\sqrt{T})$ bound is tight.
-
-### Phase 32: Algebrization Check
-- Implement explicit tests to show the topological method is non-relativizing.
-
-### Phase 33: Higher Homology ($H_q$)
-- Extend to $H_2$, $H_3$ for quantum complexity (BQP) separation.
-
-### Phase 34: MCSP-OWF Link
-- Connect Minimum Circuit Size Problem to One-Way Functions.
-
----
-
-## 5. Negative Examples (Avoided Pitfalls)
-
-| Paper | Claim | Flaw | SCO Status |
-| :--- | :--- | :--- | :--- |
-| Blum (2017) | P ≠ NP via Graph Non-Iso | Proof error | NOT USED |
-| Frontiers (2025) | SAT Requires Exhaustive Search | Assumption error | NOT USED |
-
----
-
-**Conclusion**: SCO v4.0 is a scientifically valid *experimental scaffold*. The next step is *certification*, not further experimentation.
+**Verdict**: The SCO laboratory has produced a **research-grade scaffold**, not a final proof. The path to Q.E.D. requires community validation.
