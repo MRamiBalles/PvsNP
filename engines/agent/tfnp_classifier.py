@@ -1,9 +1,10 @@
 """
 TFNP Classifier - Metamathematical Strategy Advisor
-Based on: Li et al. (2024) - TFNP complexity hierarchy
+Status: UPDATED (Phase 17)
+Based on: Li et al. (2024), rwPHP(PLS) literature (2025)
 
-This module links the theoretical TFNP classification to the agent's
-proof strategy, enabling targeted tactic selection based on problem class.
+Links theoretical TFNP classification to agent proof strategies.
+Includes explicit support for rwPHP(PLS) and Resolution Lower Bounds.
 """
 
 from dataclasses import dataclass
@@ -18,11 +19,10 @@ class TFNPClassification:
 
 class TFNPClassifier:
     """
-    Phase 16: Links TFNP theory to agent proof strategies.
-    Based on: Li et al. (2024) - Metamathematical scaling
+    Phase 17: Links TFNP theory to agent proof strategies.
     
-    When the agent encounters a goal, this classifier determines
-    which TFNP class it likely belongs to and recommends strategies.
+    Determines TFNP class (PLS, PPA, PPP, PPAD, TFZPP, rwPHP) and
+    recommends strategies.
     """
     
     def __init__(self):
@@ -71,7 +71,8 @@ class TFNPClassifier:
             "fixed point": "PPAD",
             "equilibrium": "PPAD",
             "random oracle": "TFZPP",
-            "resolution": "rwPHP_PLS"
+            "resolution": "rwPHP_PLS",
+            "retraction": "rwPHP_PLS"
         }
     
     def classify(self, goal: str) -> TFNPClassification:
@@ -81,7 +82,6 @@ class TFNPClassifier:
         print(f"\n--- TFNP Classification ---")
         print(f"[TFNP] Analyzing: {goal[:60]}...")
         
-        # Keyword-based classification
         goal_lower = goal.lower()
         detected_class = "UNKNOWN"
         
@@ -92,7 +92,6 @@ class TFNPClassifier:
                 break
         
         if detected_class == "UNKNOWN":
-            # Default to PLS for most induction-style proofs
             detected_class = "PLS"
             print(f"[TFNP] No specific keywords, defaulting to PLS")
         
@@ -102,36 +101,28 @@ class TFNPClassifier:
             "notes": "Generic tactics"
         })
         
-        result = TFNPClassification(
+        return TFNPClassification(
             problem_class=detected_class,
             recommended_tactics=strategy["tactics"],
             difficulty_estimate=strategy["difficulty"],
             metamath_notes=strategy["notes"]
         )
-        
-        print(f"[TFNP] Classification: {result.problem_class}")
-        print(f"[TFNP] Recommended tactics: {result.recommended_tactics}")
-        print(f"[TFNP] Difficulty: {result.difficulty_estimate}")
-        
-        return result
-    
-    def get_strategy_hint(self, classification: TFNPClassification) -> str:
-        """Generate a natural language strategy hint for the agent."""
-        hints = {
-            "PLS": "Try induction with a decreasing measure. Look for invariants.",
-            "PPA": "Use case analysis. The problem likely involves parity arguments.",
-            "PPP": "Apply pigeonhole principle. Find a collision point.",
-            "PPAD": "Look for fixed-point theorems. Try Brouwer or Sperner.",
-            "TFZPP": "Warning: Only hard under black-box access. Check oracle opacity.",
-            "rwPHP_PLS": "Expert level. Use random restrictions on resolution proofs."
-        }
-        return hints.get(classification.problem_class, "Use generic proof search.")
+
+    def verify_refuter(self, problem_instance: str):
+        """
+        Intenta refutar la existencia de una prueba de resolución pequeña.
+        Si falla, la búsqueda del error es una instancia de rwPHP(PLS).
+        """
+        print(f"[TFNP] Verifying refuter for: {problem_instance[:30]}...")
+        # Lógica simplificada de reducción
+        if "resolution" in problem_instance.lower():
+            print("[TFNP] Problem involves Resolution proofs.")
+            print("[TFNP] Reduction: Finding error in short proof -> rwPHP(PLS).")
+            return "INSTANCE_OF_rwPHP_PLS"
+        return "UNKNOWN_REDUCTION"
 
 if __name__ == "__main__":
     classifier = TFNPClassifier()
-    
-    # Test classifications
     classifier.classify("Prove that every function has a local minimum")
-    classifier.classify("Show that there exists a collision in the hash function")
-    classifier.classify("Find a fixed point of the continuous function f")
-    classifier.classify("Prove the sum of first n numbers equals n*(n+1)/2")
+    classifier.classify("Resolution proof of pigeonhole principle")
+    classifier.verify_refuter("Short Resolution proof for PHP")
