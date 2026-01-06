@@ -11,10 +11,8 @@ def test_2sat_vs_3sat_physics():
     print("\n--- Physics Control: 2-SAT vs 3-SAT (AMC Frustration) ---")
     
     # 2-SAT Simulation: Symmetric/Non-Frustrated interactions
-    # In 2-SAT, J_ij are often correlated in a way that allows 
-    # a smooth orientation of spins (Ground State found easily).
     print("\n[Simulating 2-SAT Landscape]")
-    mol_2sat = IsingMolecule(size=(4, 4, 1))
+    mol_2sat = IsingMolecule(size=(4, 4, 2))
     # Override J to be +1 (Ferromagnetic = No Frustration)
     for u, v in mol_2sat.graph.edges():
         mol_2sat.graph[u][v]['J'] = 1
