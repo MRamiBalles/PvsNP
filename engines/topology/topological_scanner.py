@@ -45,7 +45,24 @@ class SimplicialComplex:
     """Represents a simplicial complex for homology computation."""
     vertices: Set[int]           # 0-simplices
     edges: Set[Tuple[int, int]]  # 1-simplices
-    triangles: Set[Tuple[int, int, int]]  # 2-simplices (optional)
+    triangles: Set[Tuple[int, int, int]]  # 2-simplices
+    tetrahedra: Set[Tuple[int, int, int, int]] = None  # 3-simplices (Phase 33)
+
+    def __post_init__(self):
+        if self.tetrahedra is None:
+            self.tetrahedra = set()
+
+@dataclass
+class HigherBettiResult:
+    """Extended result with higher Betti numbers for BQP analysis."""
+    beta_0: int  # Connected components
+    beta_1: int  # 1-dimensional holes (cycles)
+    beta_2: int  # 2-dimensional voids
+    beta_3: int  # 3-dimensional cavities
+    homological_complexity: int  # h(L) = max{q : H_q != 0}
+    bqp_compatible: bool  # True if h(L) <= 2 (Tang Conjecture 8.13)
+    euler_characteristic: int
+    message: str
 
 class TopologicalScanner:
     """
@@ -56,7 +73,8 @@ class TopologicalScanner:
     Chain Complex Structure:
     - C_0: Computational configurations (vertices)
     - C_1: Transitions between configurations (edges)
-    - C_2: Confluence relations (triangles, if applicable)
+    - C_2: Confluence relations (triangles)
+    - C_3: Higher-order clusters (tetrahedra) - Phase 33/v5.0
     """
     
     def __init__(self):
@@ -68,11 +86,12 @@ class TopologicalScanner:
         
         Each configuration becomes a vertex.
         Each transition becomes an edge.
-        Confluent paths create triangles.
+        Confluent paths create triangles and tetrahedra.
         """
         vertices = set()
         edges = set()
         triangles = set()
+        tetrahedra = set()
         
         # Vertices: each unique configuration hash
         config_to_id = {}
@@ -94,23 +113,37 @@ class TopologicalScanner:
             
             prev_id = curr_id
         
-        # Triangles: detect 3-cycles in the edge graph
-        edge_list = list(edges)
+        # Build adjacency for clique detection
         adj = {v: set() for v in vertices}
         for (u, v) in edges:
             adj[u].add(v)
             adj[v].add(u)
         
+        # Triangles: 3-cliques
         for v in vertices:
             neighbors = list(adj[v])
             for i, n1 in enumerate(neighbors):
                 for n2 in neighbors[i+1:]:
                     if n2 in adj[n1]:
-                        # Found a triangle
                         tri = tuple(sorted([v, n1, n2]))
                         triangles.add(tri)
         
-        return SimplicialComplex(vertices=vertices, edges=edges, triangles=triangles)
+        # Tetrahedra: 4-cliques (for H_3)
+        for tri in triangles:
+            v1, v2, v3 = tri
+            # Find vertex connected to all three
+            common_neighbors = adj[v1] & adj[v2] & adj[v3]
+            for v4 in common_neighbors:
+                if v4 not in tri:
+                    tet = tuple(sorted([v1, v2, v3, v4]))
+                    tetrahedra.add(tet)
+        
+        return SimplicialComplex(
+            vertices=vertices, 
+            edges=edges, 
+            triangles=triangles,
+            tetrahedra=tetrahedra
+        )
     
     def build_boundary_matrix_1(self, complex: SimplicialComplex) -> np.ndarray:
         """
@@ -128,7 +161,6 @@ class TopologicalScanner:
         
         vertex_to_idx = {v: i for i, v in enumerate(vertices)}
         
-        # d_1[v, e] = 1 if vertex v is in boundary of edge e
         d1 = np.zeros((n_vertices, n_edges), dtype=int)
         
         for j, (v1, v2) in enumerate(edges):
@@ -153,17 +185,48 @@ class TopologicalScanner:
         
         edge_to_idx = {e: i for i, e in enumerate(edges)}
         
-        # d_2[e, t] = 1 if edge e is in boundary of triangle t
         d2 = np.zeros((n_edges, n_triangles), dtype=int)
         
         for j, (v1, v2, v3) in enumerate(triangles):
-            # Triangle has 3 boundary edges
             for edge in [(v1, v2), (v1, v3), (v2, v3)]:
                 e = (min(edge), max(edge))
                 if e in edge_to_idx:
                     d2[edge_to_idx[e], j] = 1
         
         return d2
+    
+    def build_boundary_matrix_3(self, complex: SimplicialComplex) -> np.ndarray:
+        """
+        Build boundary matrix d_3: C_3 -> C_2.
+        Maps tetrahedra to their boundary triangles.
+        Phase 33: Higher Homology (Tang 2025 Conjecture 8.13)
+        """
+        triangles = sorted(complex.triangles)
+        tetrahedra = sorted(complex.tetrahedra)
+        
+        n_triangles = len(triangles)
+        n_tetrahedra = len(tetrahedra)
+        
+        if n_tetrahedra == 0:
+            return np.zeros((max(1, n_triangles), 1), dtype=int)
+        
+        tri_to_idx = {t: i for i, t in enumerate(triangles)}
+        
+        d3 = np.zeros((n_triangles, n_tetrahedra), dtype=int)
+        
+        for j, (v1, v2, v3, v4) in enumerate(tetrahedra):
+            # Tetrahedron has 4 boundary triangles
+            faces = [
+                tuple(sorted([v1, v2, v3])),
+                tuple(sorted([v1, v2, v4])),
+                tuple(sorted([v1, v3, v4])),
+                tuple(sorted([v2, v3, v4]))
+            ]
+            for face in faces:
+                if face in tri_to_idx:
+                    d3[tri_to_idx[face], j] = 1
+        
+        return d3
     
     def rank_mod2(self, matrix: np.ndarray) -> int:
         """Compute rank of matrix over Z_2 using Gaussian elimination."""
@@ -175,7 +238,6 @@ class TopologicalScanner:
         
         rank = 0
         for col in range(cols):
-            # Find pivot
             pivot_row = None
             for row in range(rank, rows):
                 if M[row, col] == 1:
@@ -185,10 +247,8 @@ class TopologicalScanner:
             if pivot_row is None:
                 continue
             
-            # Swap rows
             M[[rank, pivot_row]] = M[[pivot_row, rank]]
             
-            # Eliminate
             for row in range(rows):
                 if row != rank and M[row, col] == 1:
                     M[row] = (M[row] + M[rank]) % 2
@@ -197,39 +257,91 @@ class TopologicalScanner:
         
         return rank
     
+    def compute_higher_betti(self, complex: SimplicialComplex) -> HigherBettiResult:
+        """
+        Compute Betti numbers β₀, β₁, β₂, β₃ for BQP threshold analysis.
+        
+        Tang (2025) Conjecture 8.13: BQP problems satisfy h(L) ≤ 2.
+        If we find H₃ ≠ 0, the instance is likely outside BQP.
+        """
+        n0 = len(complex.vertices)
+        n1 = len(complex.edges)
+        n2 = len(complex.triangles)
+        n3 = len(complex.tetrahedra)
+        
+        # Build all boundary matrices
+        d1 = self.build_boundary_matrix_1(complex)
+        d2 = self.build_boundary_matrix_2(complex)
+        d3 = self.build_boundary_matrix_3(complex)
+        
+        # Compute ranks
+        rank_d1 = self.rank_mod2(d1)
+        rank_d2 = self.rank_mod2(d2)
+        rank_d3 = self.rank_mod2(d3)
+        
+        # Betti numbers: β_k = dim(Ker ∂_k) - dim(Im ∂_{k+1})
+        beta_0 = max(0, n0 - rank_d1)
+        beta_1 = max(0, n1 - rank_d1 - rank_d2)
+        beta_2 = max(0, n2 - rank_d2 - rank_d3)
+        beta_3 = max(0, n3 - rank_d3)  # Assumes d4 = 0
+        
+        # Euler characteristic
+        euler = n0 - n1 + n2 - n3
+        
+        # Homological complexity h(L)
+        if beta_3 > 0:
+            h_L = 3
+        elif beta_2 > 0:
+            h_L = 2
+        elif beta_1 > 0:
+            h_L = 1
+        else:
+            h_L = 0
+        
+        # BQP compatibility (Tang Conjecture 8.13)
+        bqp_compatible = (h_L <= 2)
+        
+        if h_L == 0:
+            msg = "h(L)=0: Trivial topology. Solvable by 1D systems (P)."
+        elif h_L == 1:
+            msg = "h(L)=1: H₁ obstructions. Requires 2D systems. NP-hard candidate."
+        elif h_L == 2:
+            msg = "h(L)=2: H₂ cavities. Requires 3D systems. BQP boundary."
+        else:
+            msg = "h(L)≥3: H₃ detected! BEYOND BQP. Requires higher-dimensional physics."
+        
+        return HigherBettiResult(
+            beta_0=beta_0,
+            beta_1=beta_1,
+            beta_2=beta_2,
+            beta_3=beta_3,
+            homological_complexity=h_L,
+            bqp_compatible=bqp_compatible,
+            euler_characteristic=euler,
+            message=msg
+        )
+
     def compute_betti_numbers(self, complex: SimplicialComplex) -> BettiResult:
         """
         Compute Betti numbers using the rank-nullity theorem.
-        
-        beta_k = dim(Ker d_k) - dim(Im d_{k+1})
-               = (n_k - rank(d_k)) - rank(d_{k+1})
+        (Legacy method for backward compatibility)
         """
         n0 = len(complex.vertices)
         n1 = len(complex.edges)
         n2 = len(complex.triangles)
         
-        # Build boundary matrices
         d1 = self.build_boundary_matrix_1(complex)
         d2 = self.build_boundary_matrix_2(complex)
         
-        # Compute ranks over Z_2
         rank_d1 = self.rank_mod2(d1)
         rank_d2 = self.rank_mod2(d2)
         
-        # Betti numbers
-        # beta_0 = n0 - rank(d1) = connected components
         beta_0 = n0 - rank_d1 if n0 > 0 else 0
-        
-        # beta_1 = dim(Ker d1) - dim(Im d2) = n1 - rank_d1 - rank_d2
         beta_1 = max(0, n1 - rank_d1 - rank_d2)
-        
-        # beta_2 = n2 - rank_d2 (simplified, assumes d3 = 0)
         beta_2 = max(0, n2 - rank_d2)
         
-        # Euler characteristic
         euler = n0 - n1 + n2
         
-        # Classify topology
         if beta_1 == 0:
             topo_type = TopologyType.TRIVIAL
             msg = "Topology is TRIVIAL (contractible). Consistent with P."
@@ -251,6 +363,12 @@ class TopologicalScanner:
         
         self.scan_history.append(result)
         return result
+    
+    def scan_trace(self, trace: List[dict]) -> BettiResult:
+        """Full pipeline: trace -> simplicial complex -> Betti numbers."""
+        complex = self.trace_to_simplicial_complex(trace)
+        return self.compute_betti_numbers(complex)
+
     
     def compute_persistence(self, trace: List[dict]) -> List[PersistenceInterval]:
         """
