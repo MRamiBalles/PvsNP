@@ -17,7 +17,7 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
-\title{Homological Obstructions and Holographic Simulation:\\A Computational Approach to Complexity Separation}
+\title{The Structural Complexity Observatory: A Homological and Metamathematical Framework for Computational Hardness}
 \author{M. Garc\'ia-Vidal\thanks{Independent Researcher. Correspondence: manu@research.local}}
 \date{January 2026}
 
@@ -25,7 +25,7 @@
 \maketitle
 
 \begin{abstract}
-We present a modular computational framework for detecting structural barriers in complexity theory. By integrating techniques from algebraic topology, representation theory, and space-efficient simulation, we construct a diagnostic system capable of identifying instances where polynomial-time algorithms provably fail. Our implementation detects the $k=5$ anomaly in Kronecker coefficient asymptotics (deviation $+29$ from Hogben's triangular prediction), verifies catalytic memory invariants with $O(\sqrt{T})$ space bounds, and computes first homology groups of configuration complexes. Experimental results on small SAT instances demonstrate non-trivial $H_1$ detection, suggesting a viable path toward formalizing complexity separations. All proofs are machine-verified using Lean~4 with a neuro-symbolic feedback loop.
+We present the \emph{Structural Complexity Observatory} (SCO), a diagnostic framework designed to characterize and quantify computational hardness through the lens of topological homologies and bounded reverse mathematics. Rather than aiming for an absolute separation of $\mathsf{P}$ versus $\mathsf{NP}$, the SCO identifies universal structural signatures---such as non-trivial $H_1$ cycles and algebraic Kronecker deviations---that describe the ``form'' of hardness in the Universal Certificate Space. We map the resistance of these signatures against the proof-complexity hierarchy (from Resolution to Extended Frege) and discuss the epistemic boundaries between structural classification and the formal existence of lower bounds. Our results provide a robust laboratory for testing conjectures in Structural Computing and identifying candidates for quantum-immune cryptography.
 \end{abstract}
 
 \section{Introduction}
@@ -252,11 +252,9 @@ The class of problems solvable by a standard quantum computer ($\mathsf{BQP}$) i
 
 If this conjecture holds, problems with $h(L) \geq 3$ (high-rank obstructions) remain secure even in the post-quantum era, providing a topological foundation for lattice-based or knot-based cryptography. Furthermore, recent explorations into the class $\mathsf{TFZPP}$ and the "Lossy-Code" problem (Fleming et al., 2025) suggest that catalytic computation may provide a bridge between randomized search complexity and algebraic geometry. Future work will also focus on the "Universal Threshold Sequence" for $k \geq 6$, aiming to determine if the $k=5$ anomaly is the base case of a broader periodic obstruction in representation theory.
 
-\section{Epilogue: The Topological Era}
+\section{Epilogue: The Epistemic Limit}
 
-The verification of $\mathsf{P} \neq \mathsf{NP}$ via homological obstructions marks the transition from the era of classification to the Era of Structural Computing. We are no longer merely counting steps; we are measuring the geometry of information. The "hardness" of a problem is now understood as a physical property of its configuration space---an indestructible hole that prevents local algorithmic collapse. This success paves the way for homological cryptography, holographic hardware, and a deeper unification of physics and computation.
-
-We have presented a modular computational laboratory that synthesizes topological, algebraic, and holographic techniques for complexity analysis. The detection of the $k=5$ Kronecker anomaly and the formal verification of non-trivial homology in SAT instances provide a concrete experimental foundation for the separation of $\mathsf{P}$ and $\mathsf{NP}$. These results imply that NP-complete problems occupy a distinct mathematical category, characterized by invariants that are structurally incompatible with polynomial-time computation.
+The SCO successfully maps the topological and logical landscape of computation. However, a rigorous distinction must be maintained: we have characterized the \emph{form} of computational hardness as a homological obstruction, but the formal \emph{proof} of its existence against the strongest systems like Extended Frege remains the ultimate frontier. Our framework provides the diagnostic tools to locate and measure this gap, assuming the validity of the Homological Non-triviality Conjecture (Tang, 2025). The transition from verification to an autonomous discovery observatory marks the beginning of a new era in Structural Computing, where the geometry of information defines the limits of human and machine intelligence.
 
 \bibliographystyle{plain}
 \begin{thebibliography}{9}
