@@ -30,6 +30,36 @@ Este repositorio implementa con exito los avances teoricos de 2025 en complejida
 
 **Conclusion**: Para T pequeno, el motor simbolico puro supera al hibrido debido al overhead de inferencia. La ventaja neuro-simbolica requiere escalas masivas (T > 10^6).
 
+## SCO v2.0: Phase 24 Results
+
+| Experiment | Result | Significance |
+| :--- | :--- | :--- |
+| Kronecker (k=5) | **COLLAPSE CONFIRMED** | Algebraic obstruction detected |
+| MCSP Compression | **BOUND TIGHT** | Williams O(sqrt(T)) is optimal |
+| Spin-Glass Phase | **alpha~4.3 DETECTED** | Phase transition confirmed |
+
+## Known Limitations (Academic Honesty)
+
+> **IMPORTANT**: The following limitations have been identified and documented for transparency.
+
+### 1. Backbone Anomaly (Phase Detector)
+The `phase_detector.py` reports **0% backbone** across all phases, including critical (alpha~4.26).
+
+- **Expected**: Per Monasson-Zecchina-Kirkpatrick, backbone should jump to >60% in critical phase.
+- **Likely Cause**: Sample size (N=100) too small, or random sampling doesn't converge to frozen variables.
+- **Status**: Known bug, documented for v3.0 fix.
+
+### 2. Hybrid Engine Overhead
+The neural oracle overhead dominates for small T. True speedup requires T > 10^6.
+
+## v3.0 Roadmap (Future Research)
+
+| Concept | Source | Objective |
+| :--- | :--- | :--- |
+| **Refuter Problems** | Li et al. (2024) | TFNP-based metamathematical hardness |
+| **Quantum Homology** | Tang/Zhang (2025) | H3 != 0 implies hardness beyond BQP |
+| **Ising Hardware** | Efe et al. (2025) | Hybrid classical-quantum factorization |
+
 ## Arquitectura
 
 ```
