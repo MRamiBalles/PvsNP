@@ -50,6 +50,77 @@ class LeanFeedback:
         else:
             return (False, None, f"Unknown tactic: {tactic}")
 
+class IntrinsicRewardCalculator:
+    """
+    Phase 16: Intrinsic Reward for Novelty-Based Exploration.
+    Based on: Xin et al. (2024) - DeepSeek-Prover RMax
+    
+    Rewards the agent for reaching NOVEL tactic states, not just for
+    solving the problem. This prevents search from degenerating into
+    random exploration when extrinsic rewards are sparse.
+    """
+    
+    def __init__(self, embedding_dim: int = 64):
+        self.embedding_dim = embedding_dim
+        self.visited_embeddings: List[List[float]] = []
+        self.state_counts: Dict[str, int] = {}
+    
+    def vectorize_state(self, state: TacticState) -> List[float]:
+        """
+        Convert a tactic state to a vector embedding.
+        Uses TF-IDF-like representation of goal terms.
+        In production, use learned embeddings.
+        """
+        # Simplified: Hash-based embedding
+        state_str = str(state.goals)
+        embedding = [0.0] * self.embedding_dim
+        
+        for i, char in enumerate(state_str):
+            embedding[i % self.embedding_dim] += ord(char) / 1000.0
+        
+        # Normalize
+        norm = sum(x**2 for x in embedding) ** 0.5
+        if norm > 0:
+            embedding = [x / norm for x in embedding]
+        
+        return embedding
+    
+    def compute_distance(self, emb1: List[float], emb2: List[float]) -> float:
+        """Compute cosine distance between embeddings."""
+        dot = sum(a * b for a, b in zip(emb1, emb2))
+        return 1.0 - dot  # Distance = 1 - similarity
+    
+    def compute_intrinsic_reward(self, state: TacticState) -> float:
+        """
+        Compute intrinsic reward based on novelty.
+        R_intrinsic = min_distance_to_visited_states
+        """
+        embedding = self.vectorize_state(state)
+        
+        if not self.visited_embeddings:
+            self.visited_embeddings.append(embedding)
+            return 1.0  # Maximum novelty for first state
+        
+        # Find minimum distance to any visited state
+        min_distance = min(
+            self.compute_distance(embedding, visited)
+            for visited in self.visited_embeddings
+        )
+        
+        # Store this embedding
+        self.visited_embeddings.append(embedding)
+        
+        # Also track visit counts for state hashing
+        state_hash = str(state.goals)
+        self.state_counts[state_hash] = self.state_counts.get(state_hash, 0) + 1
+        
+        # Intrinsic reward: higher for more novel states
+        count_penalty = 1.0 / (1 + self.state_counts[state_hash])
+        intrinsic_reward = min_distance * count_penalty
+        
+        print(f"  [INTRINSIC] Novelty reward: {intrinsic_reward:.3f}")
+        return intrinsic_reward
+
 class RMaxTSAgent:
     """
     Monte-Carlo Tree Search with Truncate-and-Resume.
