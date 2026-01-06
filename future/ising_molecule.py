@@ -39,10 +39,11 @@ class IsingMolecule:
                 p = [(x, y, 0), (x+1, y, 0), (x+1, y+1, 0), (x, y+1, 0)]
                 # Product of interaction signs (safe access)
                 try:
-                    product = (self.graph.edges[p[0], p[1]]['J'] * 
-                               self.graph.edges[p[1], p[2]]['J'] * 
-                               self.graph.edges[p[2], p[3]]['J'] * 
-                               self.graph.edges[p[3], p[0]]['J'])
+                    # Using G[u][v] is safer for undirected graphs
+                    product = (self.graph[p[0]][p[1]]['J'] * 
+                               self.graph[p[1]][p[2]]['J'] * 
+                               self.graph[p[2]][p[3]]['J'] * 
+                               self.graph[p[3]][p[0]]['J'])
                     
                     total_plaquettes += 1
                     if product < 0:
@@ -50,6 +51,10 @@ class IsingMolecule:
                 except KeyError:
                     continue
         
+        if total_plaquettes == 0:
+            print("[!] Warning: No plaquettes found in the specified plane.")
+            return 0.0
+            
         frustration_index = frustrated_count / total_plaquettes
         print(f"Frustration Detection: {frustrated_count}/{total_plaquettes} plaquettes frustrated.")
         print(f"Energy Landscape Status: {'Rugged (NP-Hard signature)' if frustration_index > 0.2 else 'Smooth'}")

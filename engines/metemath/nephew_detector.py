@@ -17,11 +17,12 @@ class NephewDetector:
         print("\n--- TFZPP Structural Scan: Nephew vs Lossy-Code ---")
         
         has_binary_infinite_tree = instance_graph.get('has_infinite_tree', False)
-        no_easy_leaves = instance_graph.get('no_easy_leaves', False)
+        leaf_density = instance_graph.get('leaf_density', 0.5)
         is_compressible = instance_graph.get('is_compressible', True)
         
-        if has_binary_infinite_tree and no_easy_leaves:
+        if has_binary_infinite_tree and leaf_density < 0.1:
             print("[STATUS] NEPHEW ANOMALY (Model-Theoretic Complexity).")
+            print("        Reason: High-depth recursive branching with sparse leaves.")
             print("        Irreducible to Lossy-Code via standard T-reductions.")
             return "NEPHEW_COMPLETE"
         

@@ -21,7 +21,7 @@ def run_test(name, func):
 
 def test_nephew():
     detector = NephewDetector()
-    detector.scan_for_nephew_structure({'has_infinite_tree': True, 'no_easy_leaves': True})
+    detector.scan_for_nephew_structure({'has_infinite_tree': True, 'leaf_density': 0.05})
 
 def test_asymptotics():
     analyzer = AsymptoticAnalyzer()

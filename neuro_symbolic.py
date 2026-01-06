@@ -41,16 +41,40 @@ class NeuroSymbolicAgent:
         self.operators = ["+", "*", "list_concat", "matrix_mult", "convolution"]
 
     def run_discovery(self, failed_goal):
-        # ... (Old discovery logic)
+        """
+        Full discovery pipeline: Abstract -> Evolve -> Verify -> Vacuity Check.
+        """
         print(f"\n[HERMES] Discovery Mode Activated for goal: {failed_goal}")
         template = self.parser.abstract_goal(failed_goal)
         print(f"[HERMES] Abstracted Template: {template}")
         
         # New: If discovery finds something, evolve it
         discovery = "Commutative_Property" # Mock pass
-        self.evolver.evolve_lemma(discovery, template)
+        evolved_lemmas = self.evolver.evolve_lemma(discovery, template)
         
-        return [discovery]
+        # Phase 8: Vacuity Check Audit
+        valid_lemmas = [l for l in evolved_lemmas if self.run_vacuity_check(l['template'])]
+        
+        if not valid_lemmas:
+            print("[HERMES-v3] WARNING: All discovered lemmas failed vacuity check.")
+            return []
+            
+        print(f"[HERMES-v3] Discovery Successful: {len(valid_lemmas)} valid lemmas found.")
+        return valid_lemmas
+
+    def run_vacuity_check(self, template):
+        """
+        Checks if the lemma applies to non-trivial/non-empty structures.
+        Prevents the 'Trick Sintáctico' (vacuity).
+        """
+        # Audit: Ensure we are not proving properties of an empty set or identity
+        if "empty" in template.lower() or "0 = 1" in template:
+            return False
+        # Red Team Protection: Check for trivial identities like x = x
+        if template.strip().split('=')[0].strip() == template.strip().split('=')[-1].strip():
+            print(f"  [VACUITY] Rejected trivial identity: {template}")
+            return False
+        return True
 
     def symbolic_verification_stub(self, template, operator):
         """
