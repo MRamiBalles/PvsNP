@@ -17,16 +17,17 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
-\title{The Structural Complexity Observatory: A Homological and Metamathematical Framework for Computational Hardness}
+\title{Structural Obstructions in Computational Geometry:\\A Unified Homological Framework for Complexity Class Separation}
 \author{M. Garc\'ia-Vidal\thanks{Independent Researcher. Correspondence: manu@research.local}}
-\date{January 2026}
+\date{January 2026 -- DRAFT (Peer Review Pending)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We present the \emph{Structural Complexity Observatory} (SCO), a diagnostic framework designed to characterize and quantify computational hardness through the lens of topological homologies and bounded reverse mathematics. Rather than aiming for an absolute separation of $\mathsf{P}$ versus $\mathsf{NP}$, the SCO identifies universal structural signatures---such as non-trivial $H_1$ cycles and algebraic Kronecker deviations---that describe the ``form'' of hardness in the Universal Certificate Space. We map the resistance of these signatures against the proof-complexity hierarchy (from Resolution to Extended Frege) and discuss the epistemic boundaries between structural classification and the formal existence of lower bounds. Our results provide a robust laboratory for testing conjectures in Structural Computing and identifying candidates for quantum-immune cryptography.
+We present the \emph{Structural Complexity Observatory} (SCO), an experimental and formally verified framework designed to characterize computational hardness through the lens of topological homology and bounded reverse mathematics. Rather than claiming an absolute separation of $\mathsf{P}$ versus $\mathsf{NP}$, the SCO identifies universal structural signatures---such as non-trivial $H_1$ cycles and algebraic Kronecker deviations---that describe the ``form'' of hardness in the Universal Certificate Space. We report the detection of persistent cycles in critical SAT instances ($\alpha \approx 4.26$) and discuss the implications under the framework of square-root space simulation (Williams, 2025), Kronecker obstructions (Lee, 2025), and computational homology (Tang, 2025). A conditional formal proof in Lean~4 is provided, dependent on experimentally derived axioms. We explicitly document the limitations of our approach, including barrier evasion and axiom dependencies, to enable rigorous peer review.
 \end{abstract}
+
 
 \section{Introduction}
 
@@ -230,7 +231,41 @@ To address the critique that certain algorithms might avoid explicit search (e.g
 \subsection{Avoiding the Natural Proofs Barrier}
 
 A fundamental constraint on complexity separations is the Razborov-Rudich ``Natural Proofs'' barrier (1997), which states that any property that is both \emph{constructive} and \emph{large} cannot separate $\mathsf{P}$ from $\mathsf{NP}$ unless cryptographic pseudo-randomness is impossible. The SCO avoids this trap by utilizing homological invariants whose computation is itself non-trivial. Calculating the rank of higher homology groups on exponentially large complexes is a $\#\mathsf{P}$-hard problem, rendering the signature non-constructive for polynomial-time observers. By basing our characterization on invariants that are as difficult to compute as the problems they classify, we preserve the integrity of the cryptographic landscape.
+\section{Limitations and Barrier Analysis}
+
+This section explicitly documents the limitations of the SCO framework to enable honest peer review and identify areas for future work.
+
+\subsection{Axiom Dependency in Lean 4}
+
+The formal certificate \texttt{P\_neq\_NP\_Final.lean} depends on the axiom \texttt{SCO\_Experimental\_Evidence}, which states that $H_1(\text{SAT}) \neq 0$. This axiom is derived from Python/C++ calculations on concrete instances, not from a purely syntactic derivation within Lean.
+
+\begin{remark}[Conditional Proof]
+The Lean proof is \emph{conditional}: it is valid relative to the experimental observation. A fully self-contained proof would require constructing the $H_1$ cycle explicitly within Lean's type system, which is computationally intensive but theoretically possible.
+\end{remark}
+
+\subsection{Algebrization Barrier (Aaronson-Wigderson)}
+
+We claim empirical resistance to algebrization based on Phase 32 experiments showing that Boolean cycles ``fill'' in algebraic extensions. However:
+
+\begin{itemize}
+    \item A rigorous proof of algebrization immunity would require demonstrating that homological invariants cannot be approximated by low-degree polynomials over any field extension.
+    \item Our experiments used $GF(127)$; behavior in larger fields or algebraic closures remains untested.
+\end{itemize}
+
+\subsection{The Tautological Trap}
+
+There is a risk that the definition of the computation complex $K(\mathcal{M})$ implicitly encodes ``non-determinism = non-trivial homology.'' If so, the theorem $\mathsf{P} \implies H_n = 0$ would be definitional, not a discovery.
+
+\begin{remark}[Mitigation]
+Independent verification is required to confirm that $K(\mathcal{M})$ is defined purely from problem structure, without assuming algorithmic behavior a priori.
+\end{remark}
+
+\subsection{Natural Proofs Concern}
+
+If our homological technique efficiently distinguishes easy from hard functions, it may break pseudo-random generators (PRGs), contradicting the cryptographic assumptions we use in the MCSP-OWF analysis. The connection to Average-Case Hardness (Section 5) is correlational, not causal.
+
 \section{Discussion: The Structural Impossibility}
+
 
 The evidence gathered by our diagnostic system suggests that $\mathsf{P} \neq \mathsf{NP}$ is not merely a lack of algorithmic ingenuity, but a consequence of fundamental structural invariants:
 
