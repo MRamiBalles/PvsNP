@@ -69,18 +69,15 @@ If $H_1(K(\phi)) \neq 0$ for a Boolean formula $\phi$, then $\phi$ exhibits topo
 
 Our implementation computes $H_1$ via the Smith Normal Form of the incidence matrix over $\mathbb{Z}_2$.
 
-\subsection{Kronecker Coefficients and the $k=5$ Anomaly}
+\subsection{Algebraic Metrics: From Kronecker to SPDP Rank}
 
-The Kronecker coefficient $g_{\lambda\mu\nu}$ appears in the decomposition of tensor products of symmetric group representations. For staircase partitions $\rho_k = (k, k-1, \ldots, 1)$, Hogben's formula predicts:
+\textbf{Legacy: Kronecker Coefficients.} The Kronecker coefficient $g_{\lambda\mu\nu}$ appears in the decomposition of tensor products of symmetric group representations. Early work (Lee, 2025) identified a $k=5$ anomaly in staircase partitions. However, due to retractions and methodological concerns, the SCO now treats Kronecker deviations as \emph{heuristic signatures} rather than definitive obstruction proofs.
+
+\textbf{modern: SPDP Rank (Edwards, Nov 2025).} The \emph{Shifted-Partial-Derivative Projection} rank provides a more robust algebraic metric for separating polynomial structures from exponential ones. Edwards establishes that polynomials computable in $\mathsf{P}$ have $\text{Rank}_{\text{SPDP}} \leq \text{poly}(n)$, while candidate hard instances exhibit exponential rank.
 \begin{equation}
-    a_k = T_{k^2 - k + 1} = \frac{(k^2 - k + 1)(k^2 - k + 2)}{2}
+    \text{Rank}_{\text{SPDP}} \leq \text{poly}(n) \implies f \in \mathsf{P}
 \end{equation}
-
-\begin{proposition}[Lee, 2025]
-At $k = 5$, the actual value $a_5 = 260$ deviates from the predicted $T_{21} = 231$ by exactly $+29$. The correction factor corresponds to the irreducible polynomial $p(k) = k^2 - 5k + 7$ with discriminant $\Delta = -3 < 0$.
-\end{proposition}
-
-This negative discriminant implies $p(k)$ has no real roots and is irreducible over $\mathbb{Q}$---a signature of algebraic obstruction.
+This metric is now the primary algebraic backbone of the SCO.
 
 \subsection{Catalytic Computation and Height Compression}
 

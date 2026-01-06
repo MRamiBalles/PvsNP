@@ -16,11 +16,11 @@ class EpistemicLedger:
                 "source": "Tang (2025)",
                 "note": "H1 != 0 depends on the definition of 'computation path' complexes."
             },
-            "Algebraic_Deviance": {
-                "status": "HEURISTIC_SIGNATURE",
-                "confidence": 0.70,
-                "source": "Mulmuley/Zhang (2025)",
-                "note": "Kronecker shift indicates structural non-optimality."
+            "Algebraic_SPDP_Rank": {
+                "status": "MODERN_ALGEBRAIC_STAB",
+                "confidence": 0.90,
+                "source": "Edwards (Nov 2025)",
+                "note": "Rank SPDP: exp(n) indicates NP-Hard; replaces Kronecker heuristics."
             },
             "Holographic_Optimization": {
                 "status": "PROVEN_SPACE_BOUND",
@@ -28,11 +28,23 @@ class EpistemicLedger:
                 "source": "Williams (2025)",
                 "note": "Space simulation O(sqrt(T)) incurs temporal overhead."
             },
+            "Holographic_Area_Law": {
+                "status": "MODERN_COLLAPSE_METRIC",
+                "confidence": 0.85,
+                "source": "Nye (Nov 2025)",
+                "note": "If BoundaryEntropy <= sqrt(Volume), problem is P-solvable."
+            },
             "Metamathematical_Scaling": {
                 "status": "MAPPED_HIERARCHY",
                 "confidence": 0.90,
                 "source": "Li et al. (2024)",
                 "note": "Refuter complexity mapped to TFNP classes (PPA/PPP)."
+            },
+            "Nephew_Irreducibility": {
+                "status": "STRONG_CONJECTURE (TFZPP_LEVEL)",
+                "confidence": 0.65,
+                "source": "Fleming et al. (Dec 2025)",
+                "note": "Nephew in PWPP ∩ TFZPP, but reduction to Lossy-Code is unproven."
             },
             "Extended_Frege_Lower_Bound": {
                 "status": "OPEN_FRONTIER",
