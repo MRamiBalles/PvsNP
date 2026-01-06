@@ -161,3 +161,32 @@ The path from Framework to Proof requires:
 *"We have not proven P != NP. We have measured it."*
 
 **SCO Research Laboratory, 2026**
+
+---
+
+## APPENDIX A: The Four Critical Gaps (Toward Formal Resolution)
+
+### Gap 1: The Natural Proofs Barrier
+- **Issue**: Our metrics (Lyapunov, Spectral Gap) are "natural" properties.
+- **Risk**: A strong PRG could fool the SCO into misclassifying easy functions as hard.
+- **Resolution Path**: Prove that topological chaos is a **log-spacetime geometric constraint**, not a syntactic property of boolean functions. This requires formalizing the causal structure of computation.
+
+### Gap 2: The High-K Algorithm Hypothesis
+- **Issue**: We've shown simple algorithms fail; we haven't proven *all* algorithms fail.
+- **Risk**: A "galactic" algorithm (100TB of spaghetti code) might contain a hidden shortcut.
+- **Resolution Path**: Connect Landauer's limit to show that executing High-K algorithms without violating energy conservation is thermodynamically impossible. The information cost of encoding the shortcut exceeds the savings.
+
+### Gap 3: From PLS to Extended Frege
+- **Issue**: Our rwPHP(PLS) connection captures Resolution, a weak proof system.
+- **Risk**: Stronger systems (Extended Frege) might bypass our obstructions.
+- **Resolution Path**: Lift the chaos phenomenon to higher proof complexity. Show that the transient chaos implies proofs of "easiness" require axioms beyond bounded arithmetic ($S_2^1$).
+
+### Gap 4: The GCT Translation
+- **Issue**: We have physical collapse (shattering); mathematicians need algebraic obstructions.
+- **Risk**: Physics intuition doesn't translate to Permanent vs Determinant inequalities.
+- **Resolution Path**: Establish a formal map: $\lambda > 0 \implies g_{\lambda\mu\nu} \neq 0$ (Kronecker coefficient positivity). Convert dynamical chaos into rigid algebraic inequalities.
+
+---
+
+**Status**: These gaps define the roadmap for **Phase 8.0: The Final Proof**.
+
