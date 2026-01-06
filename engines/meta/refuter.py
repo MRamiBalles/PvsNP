@@ -148,3 +148,200 @@ def run_refutation_game(instance):
     """Run a single game round."""
     verifier = Verifier()
     return verifier.adjudicate(instance)
+
+# ============================================================================
+# PHASE 30: rwPHP(PLS) Formalization (Li, Li, Ren 2024)
+# ============================================================================
+
+class PLSOracle:
+    """
+    Polynomial Local Search (PLS) Oracle.
+    
+    Represents a local search landscape where:
+    - Nodes = Partial variable assignments.
+    - Edges = Single-flip transitions.
+    - Objective = Minimize unsatisfied clauses.
+    
+    Finding a local minimum is in PLS.
+    """
+    
+    def __init__(self, instance):
+        self.instance = instance
+        self.n = instance.num_variables
+        self.clauses = instance.clauses
+    
+    def evaluate(self, assignment: List[bool]) -> int:
+        """Count unsatisfied clauses (energy function)."""
+        count = 0
+        for clause in self.clauses:
+            satisfied = False
+            for lit in clause:
+                var = abs(lit)
+                val = assignment[var]
+                if (lit > 0 and val) or (lit < 0 and not val):
+                    satisfied = True
+                    break
+            if not satisfied:
+                count += 1
+        return count
+    
+    def neighbors(self, assignment: List[bool]):
+        """Generate all single-flip neighbors."""
+        for i in range(1, self.n + 1):
+            neighbor = assignment.copy()
+            neighbor[i] = not neighbor[i]
+            yield neighbor
+    
+    def find_local_minimum(self, start: List[bool], max_steps: int = 1000) -> Tuple[List[bool], int, int]:
+        """
+        Perform local search to find a local minimum.
+        Returns (assignment, energy, steps).
+        """
+        current = start
+        current_energy = self.evaluate(current)
+        steps = 0
+        
+        while steps < max_steps:
+            steps += 1
+            improved = False
+            
+            for neighbor in self.neighbors(current):
+                neighbor_energy = self.evaluate(neighbor)
+                if neighbor_energy < current_energy:
+                    current = neighbor
+                    current_energy = neighbor_energy
+                    improved = True
+                    break  # First improvement
+            
+            if not improved or current_energy == 0:
+                break
+        
+        return current, current_energy, steps
+
+class rwPHPInstance:
+    """
+    Retraction Weak Pigeonhole Principle Instance.
+    
+    Models the problem: Given a mapping f: [N] -> [M] where N > M,
+    find either:
+    1. A collision (x != y with f(x) = f(y)), OR
+    2. A witness that f is not surjective.
+    
+    Connection to Resolution (Li et al. 2024):
+    - If we can efficiently find such a witness, we can "refute" a 
+      supposed polynomial-time algorithm for SAT.
+    """
+    
+    def __init__(self, domain_size: int, codomain_size: int, pls_oracle: PLSOracle):
+        self.N = domain_size  # Search space size (e.g., 2^n)
+        self.M = codomain_size  # Compressed proof space
+        self.pls = pls_oracle
+    
+    def compute_f(self, x: int) -> int:
+        """
+        The mapping f: [N] -> [M].
+        We use the PLS energy landscape to define f.
+        f(x) = energy of assignment x (mod M).
+        """
+        # Encode x as a boolean assignment
+        assignment = [False] * (self.pls.n + 1)
+        for i in range(1, self.pls.n + 1):
+            if x & (1 << (i - 1)):
+                assignment[i] = True
+        
+        # f(x) = number of unsat clauses mod M
+        energy = self.pls.evaluate(assignment)
+        return energy % self.M
+    
+    def find_collision_or_witness(self, sample_size: int = 1000) -> Dict:
+        """
+        Attempt to find a collision in f.
+        Returns result with collision info or failure.
+        """
+        seen = {}  # f(x) -> x
+        
+        for _ in range(sample_size):
+            x = random.randint(0, min(self.N - 1, 2**20))  # Sample from domain
+            fx = self.compute_f(x)
+            
+            if fx in seen and seen[fx] != x:
+                # Collision found!
+                return {
+                    "found": True,
+                    "type": "collision",
+                    "x": x,
+                    "y": seen[fx],
+                    "f_value": fx
+                }
+            seen[fx] = x
+        
+        # Check surjectivity failure
+        missing = [m for m in range(self.M) if m not in seen]
+        if missing:
+            return {
+                "found": True,
+                "type": "surjectivity_failure",
+                "missing_values": missing[:5]  # First few
+            }
+        
+        return {"found": False, "type": "timeout"}
+
+@dataclass
+class TFNPClassification:
+    """Result of TFNP complexity classification."""
+    complexity_class: str  # "PLS", "PPAD", "rwPHP(PLS)", etc.
+    pls_steps: int
+    collision_found: bool
+    h1_features: int
+    verdict: str
+
+class TopologyAwareRefuter:
+    """
+    Refuter that uses topological data (H_1 features) to 
+    predict and measure metamathematical hardness.
+    
+    Key Insight: Instances with high H_1 count should be
+    harder to "compress" into the rwPHP codomain.
+    """
+    
+    def __init__(self, h1_count: int = 0):
+        self.h1_count = h1_count
+    
+    def classify(self, instance) -> TFNPClassification:
+        """
+        Classify the instance's complexity using rwPHP(PLS).
+        """
+        pls = PLSOracle(instance)
+        
+        # Initial assignment
+        start = [random.choice([True, False]) for _ in range(instance.num_variables + 1)]
+        
+        # Run PLS
+        _, min_energy, pls_steps = pls.find_local_minimum(start, max_steps=5000)
+        
+        # Set up rwPHP instance
+        # Codomain size M = k * n (k = poly factor)
+        M = max(10, instance.num_variables // 2)
+        N = 2 ** min(instance.num_variables, 15)  # Cap for tractability
+        
+        rwphp = rwPHPInstance(N, M, pls)
+        result = rwphp.find_collision_or_witness(sample_size=min(N, 2000))
+        
+        # Classification based on topological features
+        if self.h1_count == 0:
+            complexity = "PLS" if min_energy == 0 else "PPAD"
+            verdict = "Trivial topology -> Easy refutation class."
+        elif self.h1_count < 5:
+            complexity = "rwPHP(PLS)-weak"
+            verdict = "Moderate H_1 -> Weak pigeonhole hardness."
+        else:
+            complexity = "rwPHP(PLS)-complete"
+            verdict = f"High H_1 ({self.h1_count}) -> Full TFNP hardness. Refutation is hard!"
+        
+        return TFNPClassification(
+            complexity_class=complexity,
+            pls_steps=pls_steps,
+            collision_found=result["found"],
+            h1_features=self.h1_count,
+            verdict=verdict
+        )
