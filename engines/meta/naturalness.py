@@ -25,19 +25,18 @@ class NaturalnessMonitor:
 
     def verify_homological_witness(self, chain_witness, boundary_target):
         """
-        Phase 12: Uses Tang's ρ invariant for ALGEBRAIC PROOF (not search).
-        If ρ(γ) ≠ 0 and ρ(∂β) = 0 for all β, then γ is provably not a boundary.
+        Phase 12: Uses Tang's rho invariant for ALGEBRAIC PROOF (not search).
         """
-        print(f"\n--- SCO Witness Verification (Tang ρ Invariant) ---")
+        print(f"\n--- SCO Witness Verification (Tang rho Invariant) ---")
         
         rho_gamma = self.compute_tang_parity_invariant(chain_witness)
         is_boundary_zero = np.allclose(boundary_target, 0)
         
         if rho_gamma != 0 and is_boundary_zero:
-            print(f"[PASSED] ρ(γ) = {rho_gamma} ≠ 0. Cycle is ALGEBRAICALLY PROVEN non-boundary.")
+            print(f"[PASSED] rho(gamma) = {rho_gamma} != 0. Cycle is ALGEBRAICALLY PROVEN non-boundary.")
             self.witness_verified = True
         elif rho_gamma == 0:
-            print(f"[INCONCLUSIVE] ρ(γ) = 0. Cannot distinguish from boundary via invariant alone.")
+            print(f"[INCONCLUSIVE] rho(gamma) = 0. Cannot distinguish from boundary via invariant alone.")
             self.witness_verified = False
         else:
             print(f"[FAILED] Boundary target is non-zero. Witness is invalid.")
@@ -49,7 +48,7 @@ class NaturalnessMonitor:
         print(f"\n--- Razborov-Rudich Audit ---")
         self.search_hard_certified = True
         print("[SCO-v3] Search for H1 Witness: #P-HARD (Provably Non-Constructive).")
-        print("[SCO-v3] Verification via ρ Invariant: O(poly) (Algebraic, not search).")
+        print("[SCO-v3] Verification via rho Invariant: O(poly) (Algebraic, not search).")
         print("[STATUS] PASSED: SCO is NOT a Natural Proof generator.")
         return True
 

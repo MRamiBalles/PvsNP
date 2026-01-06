@@ -46,7 +46,33 @@ class TFZPPZoo:
             return {**instance, "effective_hardness": "DERANDOMIZABLE_TO_P"}
         return instance
 
+    def check_self_lowness(self, tfnp_class):
+        """
+        Ghentiyala & Li (Jul 2025): Self-Lowness in TFNP.
+        PPA, PLS, LOSSY are Self-Low (PPA^PPA = PPA).
+        PPP is NOT Turing-closed under black-box reductions.
+        
+        If a class is Self-Low, an oracle to itself doesn't increase power.
+        """
+        self_low_classes = {"PPA", "PLS", "LOSSY", "CLS", "PPAD"}
+        not_self_low = {"PPP"}
+        
+        print(f"\n--- Ghentiyala-Li Self-Lowness Check ---")
+        if tfnp_class in self_low_classes:
+            print(f"[RESULT] {tfnp_class} is SELF-LOW: {tfnp_class}^{tfnp_class} = {tfnp_class}.")
+            print(f"         Oracle access to self does NOT increase power.")
+            return {"class": tfnp_class, "self_low": True}
+        elif tfnp_class in not_self_low:
+            print(f"[RESULT] {tfnp_class} is NOT Turing-closed under black-box reductions.")
+            print(f"         Potential for strict hierarchy.")
+            return {"class": tfnp_class, "self_low": False}
+        else:
+            print(f"[UNKNOWN] {tfnp_class} self-lowness status is unclassified.")
+            return {"class": tfnp_class, "self_low": None}
+
 if __name__ == "__main__":
     zoo = TFZPPZoo()
     print(zoo.get_instance('Nephew', access_mode='BLACK_BOX'))
     print(zoo.get_instance('Nephew', access_mode='WHITE_BOX'))
+    zoo.check_self_lowness("PPA")
+    zoo.check_self_lowness("PPP")

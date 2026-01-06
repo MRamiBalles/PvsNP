@@ -11,10 +11,10 @@ class EpistemicLedger:
         self.ledger_path = ledger_path
         self.pillars = {
             "Topological_Homology": {
-                "status": "STRONG_CONJECTURE (MODEL_DEPENDENT)",
-                "confidence": 0.70,
-                "source": "Tang (2025)",
-                "note": "H1 != 0 depends on the definition of 'computation path' complexes."
+                "status": "SPECULATIVE_PLACEHOLDER",
+                "confidence": 0.15,
+                "source": "Tang (2025) - FUTURE DATE WARNING",
+                "note": "Editorial caveat: 'future publication date... speculative or placeholder work'. NOT peer-reviewed."
             },
             "Algebraic_SPDP_Rank": {
                 "status": "MODERN_ALGEBRAIC_STAB",
@@ -23,16 +23,28 @@ class EpistemicLedger:
                 "note": "Rank SPDP: exp(n) indicates NP-Hard; replaces Kronecker heuristics."
             },
             "Holographic_Optimization": {
-                "status": "PROVEN_SPACE_BOUND",
-                "confidence": 0.99,
-                "source": "Williams (2025)",
-                "note": "Space simulation O(sqrt(T)) incurs temporal overhead."
+                "status": "RETRACTED_PROOF",
+                "confidence": 0.10,
+                "source": "Nye (Nov 2025) - AUTHOR RETRACTION",
+                "note": "Author/platform: 'proof of main theorem is incorrect'. TIME[t] <= SPACE[sqrt(t)] UNPROVEN."
             },
             "Holographic_Area_Law": {
-                "status": "MODERN_COLLAPSE_METRIC",
-                "confidence": 0.85,
-                "source": "Nye (Nov 2025)",
-                "note": "If BoundaryEntropy <= sqrt(Volume), problem is P-solvable."
+                "status": "UNPROVEN_FRAMEWORK",
+                "confidence": 0.10,
+                "source": "Nye (Nov 2025) - DEPENDENT ON RETRACTED PROOF",
+                "note": "Area law based on retracted height-compression framework. INVALIDATED."
+            },
+            "Volume_Dominated_Heuristic": {
+                "status": "EXPERIMENTAL_HEURISTIC",
+                "confidence": 0.30,
+                "source": "Nye (Nov 2025) - CONJECTURE",
+                "note": "Nye: 'We do not attempt to formalize this.' Based on retracted framework."
+            },
+            "AMC_Ising_Physics": {
+                "status": "HEURISTIC_ONLY (NON-STANDARD)",
+                "confidence": 0.25,
+                "source": "Zhang (2022-2025) - NOT MAINSTREAM",
+                "note": "Claims exact lower bounds via Ising physics. NOT accepted by complexity theory consensus."
             },
             "Metamathematical_Scaling": {
                 "status": "MAPPED_HIERARCHY",
@@ -40,11 +52,17 @@ class EpistemicLedger:
                 "source": "Li et al. (2024)",
                 "note": "Refuter complexity mapped to TFNP classes (PPA/PPP)."
             },
+            "TFNP_Self_Lowness": {
+                "status": "PROVEN_STRUCTURAL",
+                "confidence": 0.95,
+                "source": "Ghentiyala & Li (Jul 2025)",
+                "note": "PPA, PLS, LOSSY are Self-Low. PPP is NOT Turing-closed."
+            },
             "Nephew_Irreducibility": {
-                "status": "STRONG_CONJECTURE (TFZPP_LEVEL)",
-                "confidence": 0.65,
+                "status": "WHITE_BOX_PARADOX",
+                "confidence": 0.20,
                 "source": "Fleming et al. (Dec 2025)",
-                "note": "Nephew in PWPP ∩ TFZPP, but reduction to Lossy-Code is unproven."
+                "note": "SCO is WHITE-BOX tool. Under white-box, TFZPP collapses to FP. Nephew hardness CONTRADICTS SCO usage."
             },
             "Extended_Frege_Lower_Bound": {
                 "status": "OPEN_FRONTIER",
@@ -55,17 +73,20 @@ class EpistemicLedger:
         }
 
     def report(self):
-        print("\n" + "="*50)
-        print("STRUCTURAL COMPLEXITY OBSERVATORY - EPISTEMIC LEDGER")
-        print("="*50)
-        print(f"{'Pillar':<25} | {'Status':<20} | {'Conf.':<5}")
-        print("-" * 55)
+        print("\n" + "="*60)
+        print("STRUCTURAL COMPLEXITY OBSERVATORY - EPISTEMIC LEDGER (EMERGENCY)")
+        print("="*60)
+        print("[CRITICAL] Multiple foundational pillars have been RETRACTED or are SPECULATIVE.")
+        print("="*60)
+        print(f"{'Pillar':<25} | {'Status':<30} | {'Conf.':<5}")
+        print("-" * 65)
         for pillar, data in self.pillars.items():
-            print(f"{pillar:<25} | {data['status']:<20} | {data['confidence']:.2f}")
-        print("="*50)
-        print("[AUDIT] The SCO operates as a diagnostic laboratory.")
-        print("[AUDIT] Characterization is verified; Existence is conjectured.")
-        print("="*50)
+            status_display = data['status'][:28] if len(data['status']) > 28 else data['status']
+            print(f"{pillar:<25} | {status_display:<30} | {data['confidence']:.2f}")
+        print("="*60)
+        print("[AUDIT] THIS SYSTEM IS NOT READY FOR DEPLOYMENT.")
+        print("[AUDIT] Foundational proofs are RETRACTED. Use for RESEARCH EXPLORATION ONLY.")
+        print("="*60)
 
 if __name__ == "__main__":
     ledger = EpistemicLedger()

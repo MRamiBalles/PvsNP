@@ -30,25 +30,29 @@ class PhysicalHomologicalBridge:
             print(f"[NO COLLAPSE] Boundary Entropy ({boundary_entropy:.2f}) > sqrt(Volume) ({holographic_threshold:.2f})")
             return {"status": "NP_HARD_CANDIDATE", "reason": "Volume-Law Scaling"}
 
-    def detect_volume_dominated_regime(self, bulk_data, boundary_reconstruction):
+    def heuristic_volume_check(self, bulk_data, boundary_reconstruction):
         """
-        Phase 12: Nye's Volume-Dominated Regime for NP.
-        If the Algebraic Replay Engine FAILS to reconstruct bulk from boundary,
-        the problem is Volume-Dominated (signature of NP-hardness).
+        NYE CONJECTURE (Nov 2025) - EXPERIMENTAL HEURISTIC.
+        "We do not attempt to formalize this picture... making this heuristic
+        precise is an intriguing open direction." - Nye 2025
+        
+        WARNING: This implements a NECESSARY but NOT SUFFICIENT condition.
+        A failure to reconstruct bulk from boundary suggests Volume-Dominated regime,
+        but this is a HEURISTIC, not a proven theorem.
         """
-        print(f"\n--- Volume-Dominated Regime Detection ---")
+        print(f"\n--- [EXPERIMENTAL] Nye Volume-Dominated Heuristic ---")
+        print(f"[WARNING] This is a CONJECTURE check, not a proven theorem.")
         
         reconstruction_error = sum(abs(b - r) for b, r in zip(bulk_data, boundary_reconstruction))
         threshold = 0.1 * sum(abs(b) for b in bulk_data)
         
         if reconstruction_error > threshold:
-            print(f"[VOLUME-DOMINATED] Boundary-to-Bulk reconstruction FAILED.")
-            print(f"         Error: {reconstruction_error:.2f} > Threshold: {threshold:.2f}")
-            print(f"[RESULT] Problem is NP-HARD (Information is in the Volume, not the Boundary).")
-            return {"status": "NP_HARD", "regime": "VOLUME_DOMINATED"}
+            print(f"[HEURISTIC] Boundary-to-Bulk reconstruction FAILED (Error: {reconstruction_error:.2f}).")
+            print(f"[CONJECTURE] Problem MAY BE Volume-Dominated (NP-signature).")
+            return {"status": "NP_CANDIDATE_HEURISTIC", "regime": "VOLUME_DOMINATED_CONJECTURED"}
         else:
-            print(f"[AREA-DOMINATED] Boundary-to-Bulk reconstruction SUCCESSFUL.")
-            return {"status": "P_SOLVABLE", "regime": "AREA_DOMINATED"}
+            print(f"[HEURISTIC] Reconstruction SUCCESSFUL. Area-Dominated regime likely.")
+            return {"status": "P_SOLVABLE_LIKELY", "regime": "AREA_DOMINATED"}
 
 if __name__ == "__main__":
     bridge = PhysicalHomologicalBridge()

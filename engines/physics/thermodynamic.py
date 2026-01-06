@@ -3,14 +3,14 @@ import math
 class ThermodynamicMonitor:
     """
     Structural Complexity Observatory (SCO) - Thermodynamic Entropy (Experimental).
-    Based on Fagan (Jan 2026): "Physical Theory of Intelligence".
+    Based on:
+    - Zhang (2022/2025): Topological Thermodynamics and symmetry breaking in spin systems.
+    - Karazoupis & Faizal (2025): Physical consistency vs axiomatic incompleteness.
+    - Bunaiyan et al. (2025): IsingFormer accelerated sampling.
     
     Hypothesis: Efficient algorithms (P) preserve internal structure (homeostasis).
     Hard problems (NP) require breaking conservation laws, leading to high
     irreversible entropy generation.
-    
-    This module unifies Topological (H1), Physical (Ising), and Holographic (Boundary)
-    metrics under a single thermodynamic law.
     """
     def __init__(self):
         self.results = []
