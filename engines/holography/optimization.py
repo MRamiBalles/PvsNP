@@ -16,7 +16,7 @@ class AlgebraicReplayEngine:
     utilizando polinomios de bajo grado sobre campos finitos constantes.
     Fuente: [2], [7].
     """
-    def __init__(self, time_bound_t):
+    def __init__(self, time_bound_t, telemetry_callback=None):
         self.t = time_bound_t
         # Selección canónica de b = sqrt(t) para optimizar S(b) = O(b + t/b)
         self.block_size_b = int(math.sqrt(time_bound_t))
@@ -24,6 +24,7 @@ class AlgebraicReplayEngine:
         # El "Rolling Boundary Buffer" almacena solo O(b) celdas
         self.rolling_buffer = {} 
         self.stack_depth = 0
+        self.telemetry_callback = telemetry_callback
 
     def height_compression_schedule(self, interval_start, interval_end):
         """
@@ -32,6 +33,9 @@ class AlgebraicReplayEngine:
         Fuente: [8], [9].
         """
         self.stack_depth += 1
+        if self.telemetry_callback:
+            self.telemetry_callback(self.stack_depth, self.block_size_b)
+            
         length = interval_end - interval_start + 1
         
         # Caso base: Hoja del árbol de computación (Bloque de tiempo unitario)
