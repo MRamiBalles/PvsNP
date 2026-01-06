@@ -5,6 +5,9 @@ class HolographicScreen:
     """
     Simulates the 'Active Holographic Screen' (Williams/Nye 2025).
     Demonstrates the Computational Area Law: Space ~ sqrt(Time).
+    Reference: Williams (2025), Nye (2025).
+    NOTE: This architecture optimizes SPACE (Area Law). It does NOT 
+    accelerate the verification time T; it may incur POLYNOMIAL OVERHEAD.
     """
     def __init__(self, time_steps):
         self.time_steps = time_steps
@@ -18,6 +21,10 @@ class HolographicScreen:
         """
         print(f"Starting simulation for T={self.time_steps}")
         print(f"Holographic Boundary (Screen) size: {self.boundary_size}")
+        
+        # Williams (2025) Overhead simulation
+        overhead_time = self.time_steps ** 1.5
+        print(f"Projected Verification Time with Holographic Overhead: ~{int(overhead_time)}")
         
         for i, val in enumerate(trace):
             # Update the screen (boundary)
