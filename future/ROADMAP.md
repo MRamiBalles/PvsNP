@@ -37,5 +37,12 @@ Moving from heuristic-based search to topologically-aware intelligence.
 - **Auto-Invention (HERMES v2)**: AI agents exploring the "Theorems Space" to find novel algebraic structures that bypass human cognitive memory limits.
 - **Critical Verification**: Using Refuter Games ($rwPHP(PLS)$) for zero-trust auditing of critical infrastructure software.
 
+## 5. Next Frontiers: Autonomous Discovery
+
+Following the successful separation, the system is now positioned to explore the deepest layers of the complexity hierarchy.
+
+- **TFZPP & Lossy-Code**: Investigating the connection between catalytic computation and Total Functional Zero-knowledge Probabilistic Polynomial-time (TFZPP). Fleming et al. (Dec 2025) suggest that the "Lossy-Code" problem may be solved using our Holographic Replay Engine.
+- **Universal Threshold Sequence**: Expanding the Algebraic Motor to calculate corrections for $k \geq 6$. Our goal is to determine if the +29 anomaly at $k=5$ is the first term in a universal sequence of topological obstructions.
+
 ---
 > "P $\neq$ NP is not a barrier; it is the guarantee that the universe has a deep, rich structure that demands structural tools to be fully understood."
