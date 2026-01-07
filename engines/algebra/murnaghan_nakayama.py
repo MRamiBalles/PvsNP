@@ -48,108 +48,105 @@ def is_valid_partition(p: Tuple[int, ...]) -> bool:
 def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[int, ...], int]]:
     """
     Find all ways to remove a border strip of size k from the partition.
-    
     Returns list of (new_partition, height) pairs.
-    Height = number of rows the strip spans.
+    Uses DFS to explore all valid rim hooks (branching between moving left or up).
     """
     if not partition or k <= 0:
         return []
     
     results = []
-    n_rows = len(partition)
+    p_mutable = list(partition)
     
-    # A border strip starts at some cell (i, partition[i]-1) and goes up-left
-    # We enumerate all possible removals
-    
-    for start_row in range(n_rows):
-        # Try to remove a strip starting from the rightmost cell of row start_row
-        p = partition_to_list(partition)
-        
-        # The strip must remove exactly k cells, staying connected
-        removed = 0
-        end_row = start_row
-        height = 1
-        
-        while removed < k and end_row >= 0:
-            # How many cells can we remove from this row?
-            if end_row == start_row:
-                # First row: start from rightmost
-                available = p[end_row]
-            else:
-                # Subsequent rows: only cells that are "exposed" (form border)
-                # A cell (i,j) is in the border if (i+1,j) is not in the diagram
-                if end_row + 1 < len(p):
-                    available = p[end_row] - p[end_row + 1]
-                else:
-                    available = p[end_row]
-            
-            if available <= 0:
-                break
-            
-            to_remove = min(available, k - removed)
-            
-            # Connectivity Check:
-            # If we are continuing a strip from the previous iteration (row below, i.e., end_row + 1),
-            # the leftmost cell removed in the current row (end_row) must be directly below
-            # the rightmost cell removed in the previous row (end_row + 1).
-            # Wait, we are iterating UP (decreasing row index).
-            # Previous iteration was 'end_row + 1'.
-            # Current is 'end_row'.
-            # The strip moves from (end_row+1, col) to (end_row, col).
-            # The column of the *last* cell removed in 'end_row+1' (its leftmost cell)
-            # must match the column of the *first* cell removed in 'end_row' (its rightmost cell).
-            
-            # Leftmost col of row below: p[end_row+1] (value after removal)
-            # Rightmost col of current row: p[end_row] - 1 (value before removal)
-            # Connectivity condition: p[end_row+1] == p[end_row] - 1?
-            # No, using indices:
-            # Row below current size: p[end_row+1]. This is the column index of the hole left.
-            # Row current rightmost available: p[end_row]-1.
-            # We need p[end_row+1] == p[end_row] - 1 to ensure vertical connection.
-            
-            if removed > 0:
-                # We have already removed cells from lower rows.
-                # Check connectivity with the row below (end_row + 1).
-                # The leftmost cell removed in row (end_row + 1) had column index `p[end_row+1]`.
-                # The rightmost cell we are about to remove in `end_row` has column index `p[end_row] - 1`.
-                # They must share an edge. Since we move UP, they must share a horizontal edge?
-                # No, vertical edge. (r+1, c) and (r, c).
-                # So column indices must match.
-                # CORRECTION: Diagonal connectivity is allowed in rim hooks!
-                # (r+1, c) and (r, c+1) are connected.
-                # So column difference can be 0 (vertical) or 1 (diagonal).
-                
-                # left_col_below = p[end_row+1]
-                # right_col_current = p[end_row] - 1
-                # diff = right_col_current - left_col_below
-                
-                diff = (p[end_row] - 1) - p[end_row+1]
-                if diff < 0 or diff > 1:
-                     # Not connected
-                     break
+    def dfs(current_p, start_row, current_row, k_left, prev_interval):
+        # Base case: successfully removed k cells
+        if k_left == 0:
+            # Height is (start_row - end_row + 1)
+            # current_row here is the *last* row from which cells were removed.
+            results.append((list_to_partition(current_p), start_row - current_row + 1))
+            return
 
-            p[end_row] -= to_remove
-            removed += to_remove
-            
-            if removed < k:
-                end_row -= 1
-                if end_row >= 0:
-                    height += 1
+        # Cannot go below row 0
+        if current_row < 0:
+            return
+
+        # Calculate available cells in current_row (exposed on rim)
+        # Cells must be removed from right to left.
+        # Rightmost available is at col p[current_row]-1.
+        # How many can we remove?
+        # Limited by the row below (it supports cells).
+        # We can remove cells as long as we don't eat into the support of row+1.
+        # But wait, available logic is: p[row] - p[row+1].
+        # These are the cells that extend beyond the row below.
         
-        if removed == k:
-            # Check if result is valid partition
-            new_p = list_to_partition(p)
-            if is_valid_partition(new_p):
-                # Verify connectivity (simplified: we trust the algorithm)
-                results.append((new_p, height))
+        if current_row + 1 < len(current_p):
+            available = current_p[current_row] - current_p[current_row + 1]
+        else:
+            available = current_p[current_row]
+            
+        if available <= 0:
+            return
+
+        # Try removing n cells from this row
+        # n can be from 1 to min(available, k_left)
+        # BUT: If we are not at the start_row (strips connect upwards),
+        # we MUST ensure connectivity with the previous interval.
+        # Since we are peeling a continuous strip, if we move UP to this row,
+        # we must connect to the strip segment in current_row+1.
+        
+        # Determine valid range of n
+        # If we are continuing a strip, we must satisfy overlap connectivity.
+        # The 'prev_interval' (from row+1) was [prev_start, prev_end].
+        # The interval we remove here will be [p[row]-n, p[row]-1].
+        # They must overlap.
+        
+        limit = min(available, k_left)
+        
+        for n in range(1, limit + 1):
+            # Proposed interval for this row
+            curr_end = current_p[current_row] - 1
+            curr_start = current_p[current_row] - n
+            
+            valid_connection = True
+            if prev_interval is not None:
+                prev_start, prev_end = prev_interval
+                # Interval overlap check
+                overlap_start = max(curr_start, prev_start)
+                overlap_end = min(curr_end, prev_end)
+                if overlap_start > overlap_end:
+                    valid_connection = False
+            
+            if valid_connection:
+                # Execute removal
+                new_p = list(current_p)
+                new_p[current_row] -= n
+                
+                # Recurse
+                # If k_left - n == 0, this path is complete, and the result is added in the base case.
+                # Otherwise, continue searching by moving up to the next row (current_row - 1).
+                dfs(new_p, start_row, current_row - 1, k_left - n, (curr_start, curr_end))
+
+    # Iterate over all possible starting rows
+    for r in range(len(partition)):
+        # Start a strip at row r
+        # Must remove at least 1 cell from row r
+        dfs(p_mutable, r, r, k, None)
+
+    # Dedup results (same partition might be reached via different paths? 
+    # Actually MN says "sum over all border strips". If multiple strips yield same partition, sum them? 
+    # Usually border strip is unique for a given set of cells.
+    # Different sets of cells might yield same partition?
+    # No, $\lambda \setminus S = \mu$. Since S is determined by $\lambda$ and $\mu$, they are unique.
+    # So deduplication involves same (partition, height) tuples.
     
-    # Remove duplicates
-    unique = {}
+    unique_results = []
+    seen = set()
     for p, h in results:
-        if p not in unique:
-            unique[p] = h
-    
-    return list(unique.items())
+        # p is tuple from list_to_partition
+        if (p, h) not in seen:
+            seen.add((p, h))
+            unique_results.append((p, h))
+            
+    return unique_results
 
 
 @lru_cache(maxsize=10000)
@@ -222,13 +219,10 @@ def partitions(n: int) -> List[Tuple[int, ...]]:
 
 def kronecker_coefficient_exact(lam: Tuple[int, ...], 
                                  mu: Tuple[int, ...], 
-                                 nu: Tuple[int, ...]) -> int:
+                                 nu: Tuple[int, ...],
+                                 debug: bool = False) -> int:
     """
     Compute the exact Kronecker coefficient g(lambda, mu, nu).
-    
-    g(lam, mu, nu) = (1/n!) * sum_{rho} |C_rho| * chi^lam(rho) * chi^mu(rho) * chi^nu(rho)
-    
-    where the sum is over conjugacy classes rho.
     """
     n = sum(lam)
     if sum(mu) != n or sum(nu) != n:
@@ -237,65 +231,54 @@ def kronecker_coefficient_exact(lam: Tuple[int, ...],
     all_parts = partitions(n)
     
     total = 0
+    if debug:
+        print(f"DEBUG: Kronecker for n={n}, lam={lam}, mu={mu}, nu={nu}")
+        print(f"{'Class':>15} | {'Size':>6} | {'X_lam':>6} | {'X_mu':>6} | {'X_nu':>6} | {'Contrib':>8}")
+    
     for rho in all_parts:
         class_size = conjugacy_class_size(rho, n)
         chi_lam = character_mn(lam, rho)
         chi_mu = character_mn(mu, rho)
         chi_nu = character_mn(nu, rho)
         
-        total += class_size * chi_lam * chi_mu * chi_nu
+        contrib = class_size * chi_lam * chi_mu * chi_nu
+        total += contrib
+        
+        if debug:
+            print(f"{str(rho):>15} | {class_size:>6} | {chi_lam:>6} | {chi_mu:>6} | {chi_nu:>6} | {contrib:>8}")
     
-    return total // factorial(n)
+    result = total // factorial(n)
+    if debug:
+        print(f"Total Sum: {total}. Factorial(n): {factorial(n)}. Result: {result}")
+    return result
 
 
 def run_kronecker_validation():
     print("\n" + "="*80)
     print("SCO v9.2 - EXACT KRONECKER COEFFICIENTS (Murnaghan-Nakayama)")
-    print("Status: REPAIRED & EXTENDED")
+    print("Status: DEBUG MODE")
     print("="*80)
     
-    # 1. Sign Representation Parity Test
-    print("\n[Test 1] Sign Representation Parity (1^n)")
-    # Theory: g(sgn, sgn, sgn) corresponds to multiplicity of Id in sgn x sgn x sgn = sgn.
-    # Since sgn != Id (for n>=2), this should ALWAYS be 0.
-    
-    for n in [3, 4, 5]:
-        sign = tuple([1]*n)
-        g = kronecker_coefficient_exact(sign, sign, sign)
-        print(f"n={n}: g((1^{n}), (1^{n}), (1^{n})) = {g} (Expected: 0)")
-        if g != 0:
-            print("  >>> FAIL: Sign parity error detected!")
-
-    # 2. Standard Representation Tests
-    print("\n[Test 2] Standard Representation (n-1, 1)")
-    # g(std, std, std)
-    # n=3 (2,1): g=1
+    # 1. Sign Representation Parity Test (Debug n=3)
+    print("\n[Test 1] Sign Representation Parity (1^3)")
     n = 3
+    sign = tuple([1]*n)
+    g = kronecker_coefficient_exact(sign, sign, sign, debug=True)
+    print(f"n={n}: g((1^{n}), (1^{n}), (1^{n})) = {g} (Expected: 0)")
+    
+    # 2. Standard Representation Tests (Debug n=3)
+    print("\n[Test 2] Standard Representation (2, 1)")
     std = (2, 1)
-    g = kronecker_coefficient_exact(std, std, std)
+    g = kronecker_coefficient_exact(std, std, std, debug=True)
     print(f"n=3: g({std}, {std}, {std}) = {g} (Expected: 1)")
 
-    # 3. The Five Threshold Hunt (Rectangular Partitions)
-    print("\n[Experiment] The Five Threshold Hunt (k=2 to 5)")
-    print("Computing g(lambda, lambda, lambda) for lambda = (2^k) (Rectangle of width 2, height k)")
-    print("Hypothesis: Sequence breaks pattern at k=5.")
+    # 3. The Five Threshold Hunt (k=2 to 5)
+    print("\n[Experiment] The Five Threshold Hunt (k=2 to 3 only for debug)")
     
-    # Sequence of rectangular partitions of width 2:
-    # k=1: (2)
-    # k=2: (2,2)
-    # k=3: (2,2,2)
-    # k=4: (2,2,2,2)
-    # k=5: (2,2,2,2,2)
-    
-    for k in range(1, 6):
+    for k in range(2, 4):
         n = 2 * k
         rect = tuple([2] * k)
-        
-        # Computing triple Kronecker product multiplicity of IDENTITY (trivial)
-        # Equivalently: multiplicity of rect in rect x rect? No, we use symmetric triple.
-        # g(rect, rect, rect)
-        
-        g = kronecker_coefficient_exact(rect, rect, rect)
+        g = kronecker_coefficient_exact(rect, rect, rect, debug=True)
         print(f"k={k} (n={n}, lambda={rect}): g = {g}")
         
     print("\n" + "="*80)
