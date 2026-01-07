@@ -45,6 +45,51 @@ def is_valid_partition(p: Tuple[int, ...]) -> bool:
     return all(x > 0 for x in p)
 
 
+def is_valid_border_strip(original: Tuple[int, ...], result: Tuple[int, ...]) -> bool:
+    """
+    Check if the skew shape (original / result) is a valid border strip.
+    A border strip (rim hook) CANNOT contain a 2x2 square.
+    
+    The skew shape has a 2x2 square if there exist adjacent rows i and i+1
+    where both rows have at least 2 cells in the removed portion AND
+    they overlap by at least 2 columns.
+    """
+    if not original:
+        return False
+    
+    # Pad result to match length of original
+    result_list = list(result) + [0] * (len(original) - len(result))
+    
+    # Calculate removed cells per row
+    # removed[i] = original[i] - result[i], cells removed from row i
+    # The interval of removed cells in row i is [result[i], original[i]-1]
+    
+    for i in range(len(original) - 1):
+        # Row i: removed cells are columns [result_list[i], original[i]-1]
+        # Row i+1: removed cells are columns [result_list[i+1], original[i+1]-1]
+        
+        removed_i_start = result_list[i]
+        removed_i_end = original[i] - 1
+        removed_i_count = original[i] - result_list[i]
+        
+        removed_i1_start = result_list[i+1]
+        removed_i1_end = original[i+1] - 1 if i+1 < len(original) else -1
+        removed_i1_count = original[i+1] - result_list[i+1] if i+1 < len(original) else 0
+        
+        # Check for 2x2 square: both rows have >=2 cells removed AND overlap >=2 columns
+        if removed_i_count >= 2 and removed_i1_count >= 2:
+            # Calculate column overlap
+            overlap_start = max(removed_i_start, removed_i1_start)
+            overlap_end = min(removed_i_end, removed_i1_end)
+            overlap_width = overlap_end - overlap_start + 1
+            
+            if overlap_width >= 2:
+                # Found a 2x2 square!
+                return False
+    
+    return True
+
+
 def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[int, ...], int]]:
     """
     Find all ways to remove a border strip of size k from the partition.
@@ -70,14 +115,6 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
             return
 
         # Calculate available cells in current_row (exposed on rim)
-        # Cells must be removed from right to left.
-        # Rightmost available is at col p[current_row]-1.
-        # How many can we remove?
-        # Limited by the row below (it supports cells).
-        # We can remove cells as long as we don't eat into the support of row+1.
-        # But wait, available logic is: p[row] - p[row+1].
-        # These are the cells that extend beyond the row below.
-        
         if current_row + 1 < len(current_p):
             available = current_p[current_row] - current_p[current_row + 1]
         else:
@@ -86,19 +123,6 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
         if available <= 0:
             return
 
-        # Try removing n cells from this row
-        # n can be from 1 to min(available, k_left)
-        # BUT: If we are not at the start_row (strips connect upwards),
-        # we MUST ensure connectivity with the previous interval.
-        # Since we are peeling a continuous strip, if we move UP to this row,
-        # we must connect to the strip segment in current_row+1.
-        
-        # Determine valid range of n
-        # If we are continuing a strip, we must satisfy overlap connectivity.
-        # The 'prev_interval' (from row+1) was [prev_start, prev_end].
-        # The interval we remove here will be [p[row]-n, p[row]-1].
-        # They must overlap.
-        
         limit = min(available, k_left)
         
         for n in range(1, limit + 1):
@@ -124,7 +148,6 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
                 if k_left - n == 0:
                      # Finished
                      h_calc = start_row - current_row + 1
-                     # print(f"DFS FINISH: start={start_row} curr={current_row} h={h_calc} p={new_p}")
                      results.append((list_to_partition(new_p), h_calc))
                 else:
                      # Must continue UP
@@ -132,22 +155,18 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
 
     # Iterate over all possible starting rows
     for r in range(len(partition)):
-        # Start a strip at row r
-        # Must remove at least 1 cell from row r
-        # print(f"DFS START: r={r} p={p_mutable}")
         dfs(p_mutable, r, r, k, None)
 
-    # Dedup results (same partition might be reached via different paths? 
-    # Actually MN says "sum over all border strips". If multiple strips yield same partition, sum them? 
-    # Usually border strip is unique for a given set of cells.
-    # Different sets of cells might yield same partition?
-    # No, $\lambda \setminus S = \mu$. Since S is determined by $\lambda$ and $\mu$, they are unique.
-    # So deduplication involves same (partition, height) tuples.
+    # Filter: remove any result where the skew shape contains a 2x2 square
+    valid_results = []
+    for new_p, h in results:
+        if is_valid_border_strip(partition, new_p):
+            valid_results.append((new_p, h))
     
+    # Dedup
     unique_results = []
     seen = set()
-    for p, h in results:
-        # p is tuple from list_to_partition
+    for p, h in valid_results:
         if (p, h) not in seen:
             seen.add((p, h))
             unique_results.append((p, h))
