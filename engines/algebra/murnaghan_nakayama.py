@@ -121,14 +121,20 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
                 new_p[current_row] -= n
                 
                 # Recurse
-                # If k_left - n == 0, this path is complete, and the result is added in the base case.
-                # Otherwise, continue searching by moving up to the next row (current_row - 1).
-                dfs(new_p, start_row, current_row - 1, k_left - n, (curr_start, curr_end))
+                if k_left - n == 0:
+                     # Finished
+                     h_calc = start_row - current_row + 1
+                     # print(f"DFS FINISH: start={start_row} curr={current_row} h={h_calc} p={new_p}")
+                     results.append((list_to_partition(new_p), h_calc))
+                else:
+                     # Must continue UP
+                     dfs(new_p, start_row, current_row - 1, k_left - n, (curr_start, curr_end))
 
     # Iterate over all possible starting rows
     for r in range(len(partition)):
         # Start a strip at row r
         # Must remove at least 1 cell from row r
+        # print(f"DFS START: r={r} p={p_mutable}")
         dfs(p_mutable, r, r, k, None)
 
     # Dedup results (same partition might be reached via different paths? 
@@ -152,43 +158,43 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
 @lru_cache(maxsize=10000)
 def character_mn(partition: Tuple[int, ...], cycle_type: Tuple[int, ...]) -> int:
     """
-    Compute chi^partition(sigma) where sigma has the given cycle_type.
-    Uses the Murnaghan-Nakayama rule recursively.
-    
-    Base case: chi^()( () ) = 1 (trivial representation of S_0)
-    Recursive case: Remove a border strip of size = first part of cycle_type
+    Compute chi^partition(sigma).
     """
-    # Normalize: sort cycle_type in decreasing order
+    # Normalize
     cycle_type = tuple(sorted(cycle_type, reverse=True))
     
-    # Base case: empty partition and empty cycle type
+    # Base case
     if not partition and not cycle_type:
         return 1
     
     if not partition or not cycle_type:
         return 0
     
-    # Check sizes match
     if sum(partition) != sum(cycle_type):
         return 0
     
-    # Remove the first (largest) cycle
     k = cycle_type[0]
     remaining_cycles = cycle_type[1:]
     
-    # Find all valid border strip removals of size k
     removals = remove_border_strip(partition, k)
     
-    if not removals:
-        return 0
+    # Debug trace for specific problematic case
+    # checking (1,1,1) or sub-partitions
+    trace = False
+    # if sum(partition) <= 3 and k==1:
+    #    if partition == (1,1,1) or partition == (2,1):
+    #         trace = True
     
-    # Sum over all removals with sign (-1)^(height-1)
     total = 0
     for new_partition, height in removals:
         sign = (-1) ** (height - 1)
-        contrib = sign * character_mn(new_partition, remaining_cycles)
+        sub_val = character_mn(new_partition, remaining_cycles)
+        contrib = sign * sub_val
         total += contrib
-    
+        
+        if trace:
+            print(f"TRACE: p={partition} k={k} -> new_p={new_partition} h={height} s={sign} sub={sub_val} contrib={contrib}")
+            
     return total
 
 
@@ -272,13 +278,15 @@ def run_kronecker_validation():
     g = kronecker_coefficient_exact(std, std, std, debug=True)
     print(f"n=3: g({std}, {std}, {std}) = {g} (Expected: 1)")
 
-    # 3. The Five Threshold Hunt (k=2 to 5)
-    print("\n[Experiment] The Five Threshold Hunt (k=2 to 3 only for debug)")
+    # 3. The Five Threshold Hunt (Rectangular Partitions)
+    print("\n[Experiment] The Five Threshold Hunt (k=1 to 5)")
+    print("Computing g(lambda, lambda, lambda) for lambda = (2^k) (Rectangle of width 2, height k)")
     
-    for k in range(2, 4):
+    for k in range(1, 6):
         n = 2 * k
         rect = tuple([2] * k)
-        g = kronecker_coefficient_exact(rect, rect, rect, debug=True)
+        # Using debug=False for production run
+        g = kronecker_coefficient_exact(rect, rect, rect, debug=False)
         print(f"k={k} (n={n}, lambda={rect}): g = {g}")
         
     print("\n" + "="*80)
