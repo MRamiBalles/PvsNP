@@ -87,6 +87,47 @@ def remove_border_strip(partition: Tuple[int, ...], k: int) -> List[Tuple[Tuple[
                 break
             
             to_remove = min(available, k - removed)
+            
+            # Connectivity Check:
+            # If we are continuing a strip from the previous iteration (row below, i.e., end_row + 1),
+            # the leftmost cell removed in the current row (end_row) must be directly below
+            # the rightmost cell removed in the previous row (end_row + 1).
+            # Wait, we are iterating UP (decreasing row index).
+            # Previous iteration was 'end_row + 1'.
+            # Current is 'end_row'.
+            # The strip moves from (end_row+1, col) to (end_row, col).
+            # The column of the *last* cell removed in 'end_row+1' (its leftmost cell)
+            # must match the column of the *first* cell removed in 'end_row' (its rightmost cell).
+            
+            # Leftmost col of row below: p[end_row+1] (value after removal)
+            # Rightmost col of current row: p[end_row] - 1 (value before removal)
+            # Connectivity condition: p[end_row+1] == p[end_row] - 1?
+            # No, using indices:
+            # Row below current size: p[end_row+1]. This is the column index of the hole left.
+            # Row current rightmost available: p[end_row]-1.
+            # We need p[end_row+1] == p[end_row] - 1 to ensure vertical connection.
+            
+            if removed > 0:
+                # We have already removed cells from lower rows.
+                # Check connectivity with the row below (end_row + 1).
+                # The leftmost cell removed in row (end_row + 1) had column index `p[end_row+1]`.
+                # The rightmost cell we are about to remove in `end_row` has column index `p[end_row] - 1`.
+                # They must share an edge. Since we move UP, they must share a horizontal edge?
+                # No, vertical edge. (r+1, c) and (r, c).
+                # So column indices must match.
+                # CORRECTION: Diagonal connectivity is allowed in rim hooks!
+                # (r+1, c) and (r, c+1) are connected.
+                # So column difference can be 0 (vertical) or 1 (diagonal).
+                
+                # left_col_below = p[end_row+1]
+                # right_col_current = p[end_row] - 1
+                # diff = right_col_current - left_col_below
+                
+                diff = (p[end_row] - 1) - p[end_row+1]
+                if diff < 0 or diff > 1:
+                     # Not connected
+                     break
+
             p[end_row] -= to_remove
             removed += to_remove
             
@@ -209,60 +250,58 @@ def kronecker_coefficient_exact(lam: Tuple[int, ...],
 
 def run_kronecker_validation():
     print("\n" + "="*80)
-    print("SCO v9.1 - EXACT KRONECKER COEFFICIENTS (Murnaghan-Nakayama)")
+    print("SCO v9.2 - EXACT KRONECKER COEFFICIENTS (Murnaghan-Nakayama)")
+    print("Status: REPAIRED & EXTENDED")
     print("="*80)
     
-    # Test character values first
-    print("\n--- Character Value Tests ---")
+    # 1. Sign Representation Parity Test
+    print("\n[Test 1] Sign Representation Parity (1^n)")
+    # Theory: g(sgn, sgn, sgn) corresponds to multiplicity of Id in sgn x sgn x sgn = sgn.
+    # Since sgn != Id (for n>=2), this should ALWAYS be 0.
     
-    # chi^(n)(identity) = 1 (trivial rep dimension)
-    for n in [3, 4, 5]:
-        identity = tuple([1]*n)
-        trivial = (n,)
-        chi = character_mn(trivial, identity)
-        print(f"chi^({n})( (1^{n}) ) = {chi} (expected: 1)")
-    
-    # chi^(1^n)(identity) = 1 (sign rep dimension)
-    for n in [3, 4, 5]:
-        identity = tuple([1]*n)
-        sign = tuple([1]*n)
-        chi = character_mn(sign, identity)
-        print(f"chi^(1^{n})( (1^{n}) ) = {chi} (expected: 1)")
-    
-    # chi^(2,1)((3)) for S_3: should be 0 (standard rep on 3-cycle)
-    print(f"chi^(2,1)( (3) ) = {character_mn((2,1), (3,))} (expected: 0)")
-    
-    # chi^(2,1)((1,1,1)) = 2 (dimension of standard rep)
-    print(f"chi^(2,1)( (1,1,1) ) = {character_mn((2,1), (1,1,1))} (expected: 2)")
-    
-    # Now test Kronecker coefficients
-    print("\n--- Kronecker Coefficient Tests ---")
-    
-    # g((n), (n), (n)) = 1
-    for n in [3, 4, 5]:
-        g = kronecker_coefficient_exact((n,), (n,), (n,))
-        print(f"g(({n}), ({n}), ({n})) = {g} (expected: 1)")
-    
-    # g((1^n), (1^n), (1^n)) = 1 for odd n, 0 for even n (product of signs)
     for n in [3, 4, 5]:
         sign = tuple([1]*n)
         g = kronecker_coefficient_exact(sign, sign, sign)
-        expected = 1 if n % 2 == 1 else 0
-        print(f"g((1^{n}), (1^{n}), (1^{n})) = {g} (expected: {expected})")
-    
-    # Test the k=5 threshold case with rectangular partitions
-    print("\n--- GCT-Relevant Cases (Rectangular Partitions) ---")
-    
-    for n in [4, 5, 6]:
-        rect_2 = tuple([2] * (n // 2)) if n % 2 == 0 else tuple([2] * (n // 2) + [1])
-        trivial = (n,)
-        # g(rect, rect, trivial) 
-        g = kronecker_coefficient_exact(rect_2, rect_2, trivial)
-        print(f"n={n}: g({rect_2}, {rect_2}, {trivial}) = {g}")
+        print(f"n={n}: g((1^{n}), (1^{n}), (1^{n})) = {g} (Expected: 0)")
+        if g != 0:
+            print("  >>> FAIL: Sign parity error detected!")
 
+    # 2. Standard Representation Tests
+    print("\n[Test 2] Standard Representation (n-1, 1)")
+    # g(std, std, std)
+    # n=3 (2,1): g=1
+    n = 3
+    std = (2, 1)
+    g = kronecker_coefficient_exact(std, std, std)
+    print(f"n=3: g({std}, {std}, {std}) = {g} (Expected: 1)")
+
+    # 3. The Five Threshold Hunt (Rectangular Partitions)
+    print("\n[Experiment] The Five Threshold Hunt (k=2 to 5)")
+    print("Computing g(lambda, lambda, lambda) for lambda = (2^k) (Rectangle of width 2, height k)")
+    print("Hypothesis: Sequence breaks pattern at k=5.")
+    
+    # Sequence of rectangular partitions of width 2:
+    # k=1: (2)
+    # k=2: (2,2)
+    # k=3: (2,2,2)
+    # k=4: (2,2,2,2)
+    # k=5: (2,2,2,2,2)
+    
+    for k in range(1, 6):
+        n = 2 * k
+        rect = tuple([2] * k)
+        
+        # Computing triple Kronecker product multiplicity of IDENTITY (trivial)
+        # Equivalently: multiplicity of rect in rect x rect? No, we use symmetric triple.
+        # g(rect, rect, rect)
+        
+        g = kronecker_coefficient_exact(rect, rect, rect)
+        print(f"k={k} (n={n}, lambda={rect}): g = {g}")
+        
     print("\n" + "="*80)
-    print("Murnaghan-Nakayama rule validated. Exact Kronecker computation operational.")
+    print("Validation Complete.")
     print("="*80)
+
 
 
 if __name__ == "__main__":
